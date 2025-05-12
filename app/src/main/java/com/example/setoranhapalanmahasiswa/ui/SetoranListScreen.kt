@@ -22,52 +22,40 @@ fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
     var loading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Ambil data saat pertama kali
     LaunchedEffect(Unit) {
         scope.launch {
             try {
                 daftar = vm.getSetoranList()
-                Log.d("SetoranListScreen", "Berhasil ambil data: ${daftar.size} item")
+                Log.d("SetoranListScreen", "Data: ${daftar.size} item")
                 loading = false
             } catch (e: Exception) {
                 errorMessage = "Gagal ambil data: ${e.message}"
-                Log.e("SetoranListScreen", "Error saat ambil data", e)
                 loading = false
             }
         }
     }
 
-    // UI Utama
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Daftar Setoran", style = MaterialTheme.typography.titleLarge)
+        Text("Detail Riwayat Muroja'ah", style = MaterialTheme.typography.titleLarge)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         when {
-            loading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            errorMessage != null -> {
-                Text("Terjadi kesalahan: $errorMessage", color = MaterialTheme.colorScheme.error)
-            }
-            daftar.isEmpty() -> {
-                Text("Belum ada data setoran.")
-            }
-            else -> {
-                LazyColumn {
-                    items(daftar) { setoran ->
-                        Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text("${setoran.surah} : ${setoran.ayat} (${setoran.tanggal})")
-                                Text("Status: ${setoran.status}")
-                                Spacer(Modifier.height(8.dp))
-                                Button(onClick = {
-                                    nav.navigate("setoran_verifikasi/${setoran.id}")
-                                }) {
-                                    Text("Lihat Verifikasi")
-                                }
+            errorMessage != null -> Text("Kesalahan: $errorMessage", color = MaterialTheme.colorScheme.error)
+            daftar.isEmpty() -> Text("Belum ada data setoran.")
+            else -> LazyColumn {
+                items(daftar) { setoran ->
+                    Card(Modifier.fillMaxWidth().padding(8.dp)) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text("Surah: ${setoran.surah} (${setoran.ayat})")
+                            Text("Status: ${if (setoran.sudah_setor) "Sudah" else "Belum"}")
+                            Text("Label: ${setoran.label}")
+                            Spacer(Modifier.height(8.dp))
+                            Button(onClick = { nav.navigate("setoran_verifikasi/${setoran.id}") }) {
+                                Text("Lihat Verifikasi")
                             }
                         }
                     }
@@ -76,3 +64,4 @@ fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
         }
     }
 }
+

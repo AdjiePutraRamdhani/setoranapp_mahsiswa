@@ -19,11 +19,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun VerifikasiScreen(id: Int, vm: AuthViewModel = viewModel()) {
-    var penilaian by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
+    var penilaian by remember { mutableStateOf("Memuat...") }
 
-    LaunchedEffect(true) {
-        scope.launch { penilaian = vm.getVerifikasi(id).toString() }
+    LaunchedEffect(id) {
+        penilaian = vm.getVerifikasi(id).toString()
     }
 
     Column(Modifier.padding(16.dp)) {
@@ -31,3 +30,5 @@ fun VerifikasiScreen(id: Int, vm: AuthViewModel = viewModel()) {
         Text(penilaian)
     }
 }
+
+
