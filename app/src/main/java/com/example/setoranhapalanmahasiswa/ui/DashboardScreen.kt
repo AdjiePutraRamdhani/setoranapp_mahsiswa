@@ -22,7 +22,7 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Selamat datang bebas, ${vm.nama}",
+                        text = "Selamat datang, ${if (vm.nama.isNotEmpty()) vm.nama else "bebas"}",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -44,7 +44,7 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
 
             when (selectedTabIndex) {
-                0 -> SetoranListScreen(nav)  // Tampilan daftar setoran
+                0 -> SetoranListScreen(nav, vm)  // Tampilan daftar setoran
                 1 -> SetoranFormScreen(nav, vm)  // Form input setoran
             }
         }

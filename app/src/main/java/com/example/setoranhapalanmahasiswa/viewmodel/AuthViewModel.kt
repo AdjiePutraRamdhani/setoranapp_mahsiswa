@@ -1,27 +1,23 @@
 package com.example.setoranhapalanmahasiswa.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.setoranhapalanmahasiswa.model.LoginRequest
 import com.example.setoranhapalanmahasiswa.model.LoginResponse
 import com.example.setoranhapalanmahasiswa.model.Setoran
 import com.example.setoranhapalanmahasiswa.network.ApiClient
 import com.example.setoranhapalanmahasiswa.network.getSetoranListFromApi
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
+import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.utils.EmptyContent.headers
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
-import io.ktor.http.contentType
+import kotlinx.serialization.json.Json
 
 // State untuk menandakan status pengambilan data
 enum class LoadingStatus {
@@ -31,38 +27,39 @@ enum class LoadingStatus {
 }
 
 class AuthViewModel : ViewModel() {
-    // State untuk menyimpan token, nama mahasiswa, dan pesan error
     var token by mutableStateOf("")
     var nama by mutableStateOf("")
     var error by mutableStateOf("")
     var status by mutableStateOf(LoadingStatus.SUCCESS)
+    var setoranList = mutableStateListOf<Setoran>()
 
-    // Fungsi login untuk mahasiswa, diletakkan langsung dalam ViewModel
     suspend fun login(nim: String) {
-        status = LoadingStatus.LOADING // Menandakan proses loading saat login
+        status = LoadingStatus.LOADING
         try {
-            token = loginMahasiswa(nim) // Mendapatkan token setelah login
-            // Opsional: Anda bisa menambahkan logika untuk decode token jika diperlukan
-            status = LoadingStatus.SUCCESS // Menandakan login sukses
+            token = loginMahasiswa(nim)
+            error = ""  // Reset error jika login berhasil
+            status = LoadingStatus.SUCCESS  // Status sukses sebelum mengambil data
+            println("Token berhasil didapatkan: $token")
+            fetchSetoranList()
         } catch (e: Exception) {
-            error = "Login gagal: ${e.message}" // Menyimpan pesan error jika gagal login
-            status = LoadingStatus.ERROR // Menandakan terjadi error saat login
+            error = "Login gagal: ${e.message}"
+            status = LoadingStatus.ERROR
+            println("Error saat login: ${e.message}")
         }
     }
 
-    // Fungsi login yang memanggil API untuk login
-    suspend fun loginMahasiswa(nim: String): String {
+    private suspend fun loginMahasiswa(nim: String): String {
         if (nim.isBlank()) throw Exception("NIM tidak boleh kosong")
 
         try {
-            println("Sending request to: https://id.tif.uin-suska.ac.id/realms/dev/protocol/openid-connect/token")
+            println("Mengirim permintaan login ke server...")
 
             val response = ApiClient.client.submitForm(
                 url = "https://id.tif.uin-suska.ac.id/realms/dev/protocol/openid-connect/token",
                 formParameters = Parameters.build {
                     append("grant_type", "password")
-                    append("client_id", "setoran-mobile-dev") // ganti sesuai konfigurasi Anda
-                    append("client_secret", "aqJp3xnXKudgC7RMOshEQP7ZoVKWzoSl") // jika client menggunakan secret
+                    append("client_id", "setoran-mobile-dev")
+                    append("client_secret", "aqJp3xnXKudgC7RMOshEQP7ZoVKWzoSl")
                     append("username", nim)
                     append("password", nim)
                 }
@@ -72,53 +69,58 @@ class AuthViewModel : ViewModel() {
                 }
             }
 
-            println("Response status: ${response.status.value}")
+            println("Status respons: ${response.status.value}")
             val responseBody = response.bodyAsText()
-            println("Response body: $responseBody")
+            println("Isi respons: $responseBody")  // Log respons mentah
 
             if (response.status.value != 200) {
                 throw Exception("Login gagal: $responseBody")
             }
 
-            val body = response.body<LoginResponse>()
-            return body.access_token
+            // Parsing respons dengan opsi ignoreUnknownKeys
+            // Parsing respons dengan opsi ignoreUnknownKeys
+            try {
+                val json = Json { ignoreUnknownKeys = true }  // Mengabaikan field yang tidak dikenal
+                val body = json.decodeFromString<LoginResponse>(responseBody)
+                println("Nama: ${body.name}, Token: ${body.accessToken}")  // Menggunakan nama field yang benar
+                nama = body.name ?: "User"
+                return body.accessToken
+            } catch (e: Exception) {
+                println("Error parsing JSON: ${e.message}")
+                throw Exception("Gagal memproses respons: ${e.message}")
+            }
+
 
         } catch (e: Exception) {
-            println("Error during login: ${e.message}")
-            throw Exception("Terjadi kesalahan: ${e.message}")
+            println("Kesalahan login: ${e.message}")
+            throw Exception("Kesalahan login: ${e.message}")
         }
     }
 
 
 
 
-
-
-
-
-
-    // Fungsi untuk mengambil daftar setoran dari API
-    suspend fun getSetoranList(): List<Setoran> {
-        status = LoadingStatus.LOADING // Menandakan proses loading saat mengambil daftar setoran
-        return try {
-            // Mengambil daftar setoran menggunakan fungsi dari ApiService
+    suspend fun fetchSetoranList() {
+        status = LoadingStatus.LOADING
+        try {
+            println("Mengambil daftar setoran dari API...")
             val response = getSetoranListFromApi(token)
-            status = LoadingStatus.SUCCESS // Menandakan berhasil mengambil data
-            response // Mengembalikan daftar setoran
+            setoranList.clear()
+            setoranList.addAll(response)
+            status = LoadingStatus.SUCCESS
+            println("Berhasil mengambil ${response.size} data setoran.")
         } catch (e: Exception) {
-            error = "Gagal mengambil daftar setoran: ${e.message}" // Menyimpan pesan error jika gagal
-            status = LoadingStatus.ERROR // Menandakan error saat mengambil data
-            emptyList() // Mengembalikan list kosong jika terjadi error
+            error = "Gagal mengambil daftar setoran: ${e.message}"
+            status = LoadingStatus.ERROR
+            println("Error: ${e.message}")
         }
     }
 
-    // Fungsi untuk mengirim setoran (POST request)
-    suspend fun submitSetoran(surah: String, ayat: String, tanggal: String) {
-        // Logika untuk mengirimkan setoran, jika diperlukan
+    fun getSetoranList(): List<Setoran> {
+        return setoranList
     }
 
-    // Fungsi untuk mendapatkan penilaian verifikasi
     suspend fun getVerifikasi(id: Int) {
         // Logika untuk mengambil penilaian verifikasi jika diperlukan
+        }
     }
-}
