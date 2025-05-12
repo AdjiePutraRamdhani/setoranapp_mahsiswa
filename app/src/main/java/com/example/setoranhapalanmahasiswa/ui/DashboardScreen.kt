@@ -22,7 +22,7 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Selamat datang, ${vm.nama}",
+                        text = "Selamat datang bebas, ${vm.nama}",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
