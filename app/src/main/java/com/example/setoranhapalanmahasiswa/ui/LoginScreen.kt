@@ -13,13 +13,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
+fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     var nim by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()

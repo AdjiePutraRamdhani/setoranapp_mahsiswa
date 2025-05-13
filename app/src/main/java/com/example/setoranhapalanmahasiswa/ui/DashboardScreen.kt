@@ -1,31 +1,42 @@
 package com.example.setoranhapalanmahasiswa.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
+fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Daftar Setoran", "Kirim Setoran Baru")
+    val tabs = listOf("Daftar Setoran", "Statistik Setoran")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Selamat datang, ${if (vm.nama.isNotEmpty()) vm.nama else "bebas"}",
+                        text = if (vm.nama.isNotEmpty()) "Selamat datang, ${vm.nama}"
+                        else "Memuat data...",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
+                }, actions = {
+                    IconButton(onClick = { nav.navigate("profile") }) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profil"
+                        )
+                    }
                 }
             )
         }
@@ -49,4 +60,6 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
             }
         }
     }
+    println("NAMA YANG DITAMPILKAN: ${vm.nama}")
+
 }

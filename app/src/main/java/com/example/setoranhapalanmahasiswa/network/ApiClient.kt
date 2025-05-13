@@ -9,7 +9,11 @@ import kotlinx.serialization.json.Json
 object ApiClient {
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
+            json(Json {
+                ignoreUnknownKeys = true
+                prettyPrint = true
+                isLenient = true
+            })
         }
     }
 }

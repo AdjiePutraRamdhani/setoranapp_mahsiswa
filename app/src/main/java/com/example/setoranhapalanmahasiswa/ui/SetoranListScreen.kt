@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.model.Setoran
@@ -16,7 +17,7 @@ import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
+fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     val scope = rememberCoroutineScope()
     var daftar by remember { mutableStateOf(listOf<Setoran>()) }
     var loading by remember { mutableStateOf(true) }

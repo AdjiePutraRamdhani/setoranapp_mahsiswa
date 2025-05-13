@@ -8,12 +8,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 
 @Composable
-fun SetoranFormScreen(nav: NavHostController, vm: AuthViewModel = viewModel()) {
+fun SetoranFormScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     val setoranList = vm.setoranList
 
     Column(
