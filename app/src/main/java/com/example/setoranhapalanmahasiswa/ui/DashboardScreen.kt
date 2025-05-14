@@ -91,32 +91,13 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
         ) {
             when (currentScreen) {
                 "home" -> {
-                    // Tab untuk Beranda (Setoran & Statistik)
-                    TabRow(selectedTabIndex = selectedTabIndex) {
-                        tabs.forEachIndexed { index, title ->
-                            Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { selectedTabIndex = index },
-                                text = { Text(title) }
-                            )
-                        }
-                    }
-
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    when (selectedTabIndex) {
-                        0 -> SetoranListScreen(nav, vm)
-                        1 -> SetoranFormScreen(nav, vm)
-                    }
+                        SetoranListScreen(nav, vm)
                 }
 
                 "statistik" -> {
-                    Text(
-                        "Statistik Setoran",
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(top = 32.dp)
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SetoranFormScreen(nav, vm)
                 }
 
                 "profile" -> {
