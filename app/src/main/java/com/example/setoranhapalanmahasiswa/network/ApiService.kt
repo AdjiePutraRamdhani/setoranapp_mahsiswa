@@ -17,10 +17,14 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.coroutines.flow.first
 
 // Fungsi untuk mengambil data setoran mahasiswa
-suspend fun getSetoranListFromApi(): List<Setoran> {
+suspend fun getSetoranListFromApi(token: String): List<Setoran> {
     return try {
         // Melakukan request ke API setoran
-        val response: HttpResponse = ApiClient.client.get("https://api.tif.uin-suska.ac.id/setoran-dev/v1/mahasiswa/setoran-saya")
+        val response: HttpResponse = ApiClient.client.get("https://api.tif.uin-suska.ac.id/setoran-dev/v1/mahasiswa/setoran-saya") {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer $token")
+            }
+        }
 
         // Parsing respons menjadi JsonObject
         val fullResponse = response.body<JsonObject>()

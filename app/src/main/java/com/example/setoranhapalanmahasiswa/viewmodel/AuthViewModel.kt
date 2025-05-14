@@ -172,13 +172,16 @@ class AuthViewModel @Inject constructor(
     suspend fun fetchSetoranList() {
         status = LoadingStatus.LOADING
         try {
-            val response = getSetoranListFromApi()
+            println("Mengambil daftar setoran dari API...")
+            val response = getSetoranListFromApi(token)
             setoranList.clear()
             setoranList.addAll(response)
             status = LoadingStatus.SUCCESS
+            println("Berhasil mengambil ${response.size} data setoran")
         } catch (e: Exception) {
             error = "Gagal mengambil daftar setoran: ${e.message}"
             status = LoadingStatus.ERROR
+            println("Error: ${e.message}")
         }
     }
 

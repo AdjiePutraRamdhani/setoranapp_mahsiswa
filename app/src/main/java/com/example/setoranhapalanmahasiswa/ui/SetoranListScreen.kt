@@ -26,6 +26,7 @@ fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel(
     LaunchedEffect(Unit) {
         scope.launch {
             try {
+                vm.fetchSetoranList()
                 daftar = vm.getSetoranList()
                 Log.d("SetoranListScreen", "Data: ${daftar.size} item")
                 loading = false
