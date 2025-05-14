@@ -39,10 +39,6 @@ fun SetoranHafalanApp() {
             composable("profile") { ProfileScreen(navController = navController) } // ✅ Perubahan di sini
             composable("setoran_list") { SetoranListScreen(navController) }
             composable("setoran_form") { SetoranFormScreen(navController) }
-            composable("setoran_verifikasi/{id}") {
-                val id = it.arguments?.getString("id")?.toIntOrNull() ?: 0
-                VerifikasiScreen(id)
-            }
         }
     }
 }

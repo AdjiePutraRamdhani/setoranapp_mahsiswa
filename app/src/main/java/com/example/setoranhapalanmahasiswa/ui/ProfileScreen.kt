@@ -80,7 +80,7 @@ fun ProfileScreen(
                             // Profil Items
                             ProfileItem(label = "Nama", value = vm.nama)
                             ProfileItem(label = "Email", value = vm.email)
-                            ProfileItem(label = "Username (NIM)", value = vm.nim)
+                            ProfileItem(label = "NIM", value = vm.nim)
                         }
                     }
 

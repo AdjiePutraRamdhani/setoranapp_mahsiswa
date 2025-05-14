@@ -49,7 +49,7 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
                             Text(
                                 text = if (vm.nama.isNotEmpty()) "Selamat datang, ${vm.nama}" else "Memuat data...",
                                 fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 16.dp)
+                                modifier = Modifier.padding(start = 10.dp)
                             )
                         }
                     }
