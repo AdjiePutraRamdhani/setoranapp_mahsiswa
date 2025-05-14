@@ -21,10 +21,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-
+import javax.inject.Inject
 
 // State untuk menandakan status pengambilan data
 enum class LoadingStatus {
@@ -64,13 +63,8 @@ class AuthViewModel @Inject constructor(
             status = LoadingStatus.LOADING
             try {
                 token = loginMahasiswa(nim)
-                error = ""  // Reset error jika login berhasil
+                error = ""
                 status = LoadingStatus.SUCCESS
-
-                // Simpan token ke DataStore
-                // Token sudah disimpan dalam fungsi loginMahasiswa(), tidak perlu disimpan lagi di sini
-                println("Login berhasil, token dan refresh token sudah disimpan.")
-
 
                 // Ambil data profil dan daftar setoran
                 fetchUserInfo(token)
@@ -78,7 +72,6 @@ class AuthViewModel @Inject constructor(
             } catch (e: Exception) {
                 error = "Login gagal: ${e.message}"
                 status = LoadingStatus.ERROR
-                println("Error saat login: ${e.message}")
             }
         }
     }
@@ -86,10 +79,7 @@ class AuthViewModel @Inject constructor(
     // Fungsi untuk melakukan login ke server
     private suspend fun loginMahasiswa(nim: String): String {
         if (nim.isBlank()) throw Exception("NIM tidak boleh kosong")
-
         try {
-            println("Mengirim permintaan login ke server...")
-
             val response = ApiClient.client.submitForm(
                 url = "https://id.tif.uin-suska.ac.id/realms/dev/protocol/openid-connect/token",
                 formParameters = Parameters.build {
@@ -111,17 +101,10 @@ class AuthViewModel @Inject constructor(
                 throw Exception("Login gagal: $responseBody")
             }
 
-            // Parsing respons dan menyimpan token
             val body = Json { ignoreUnknownKeys = true }.decodeFromString<LoginResponse>(responseBody)
-
-// Simpan access token dan refresh token
             dataStoreManager.saveToken(body.accessToken)
             dataStoreManager.saveRefreshToken(body.refreshToken)
-            println("Token berhasil disimpan: ${body.accessToken}")
-            println("Refresh Token berhasil disimpan: ${body.refreshToken}")
-
             return body.accessToken
-
         } catch (e: Exception) {
             throw Exception("Kesalahan login: ${e.message}")
         }
@@ -130,10 +113,7 @@ class AuthViewModel @Inject constructor(
     // Fungsi untuk memperbarui token jika kedaluwarsa
     suspend fun refreshToken(): String? {
         try {
-            println("Memperbarui token...")
-
             val refreshToken = dataStoreManager.getRefreshToken() ?: throw Exception("Refresh token tidak ditemukan")
-
             val response = ApiClient.client.submitForm(
                 url = "https://id.tif.uin-suska.ac.id/realms/dev/protocol/openid-connect/token",
                 formParameters = Parameters.build {
@@ -153,8 +133,7 @@ class AuthViewModel @Inject constructor(
                 val newToken = jsonObject["access_token"]?.jsonPrimitive?.content
 
                 if (newToken != null) {
-                    println("Token berhasil diperbarui: $newToken")
-                    dataStoreManager.saveToken(newToken)  // Simpan token baru
+                    dataStoreManager.saveToken(newToken)
                     token = newToken
                     return newToken
                 } else {
@@ -164,27 +143,21 @@ class AuthViewModel @Inject constructor(
                 throw Exception("Gagal memperbarui token: ${response.status}")
             }
         } catch (e: Exception) {
-            println("Error saat memperbarui token: ${e.message}")
             error = "Gagal memperbarui token: ${e.message}"
             return null
         }
     }
 
-
     // Fungsi untuk mengambil informasi pengguna
     suspend fun fetchUserInfo(token: String) {
         status = LoadingStatus.LOADING
         try {
-            val profile = getUserProfileFromApi(token)  // Mengirim token
-
+            val profile = getUserProfileFromApi(token)
             if (profile != null) {
                 nama = profile.name ?: "Nama Tidak Diketahui"
                 email = profile.email ?: "Email Tidak Diketahui"
                 nim = profile.preferred_username ?: "NIM Tidak Diketahui"
                 status = LoadingStatus.SUCCESS
-                println("Profil berhasil diambil: Nama: $nama, NIM: $nim, Email: $email")
-
-                // Simpan data profil ke DataStore
                 dataStoreManager.saveUserProfile(nama, email, nim)
             } else {
                 throw Exception("Data profil kosong atau tidak ditemukan.")
@@ -192,7 +165,6 @@ class AuthViewModel @Inject constructor(
         } catch (e: Exception) {
             error = "Gagal mengambil profil: ${e.message}"
             status = LoadingStatus.ERROR
-            println("Error saat mengambil profil: ${e.message}")
         }
     }
 
@@ -200,16 +172,13 @@ class AuthViewModel @Inject constructor(
     suspend fun fetchSetoranList() {
         status = LoadingStatus.LOADING
         try {
-            println("Mengambil daftar setoran dari API...")
             val response = getSetoranListFromApi()
             setoranList.clear()
             setoranList.addAll(response)
             status = LoadingStatus.SUCCESS
-            println("Berhasil mengambil ${response.size} data setoran.")
         } catch (e: Exception) {
             error = "Gagal mengambil daftar setoran: ${e.message}"
             status = LoadingStatus.ERROR
-            println("Error: ${e.message}")
         }
     }
 
@@ -218,9 +187,20 @@ class AuthViewModel @Inject constructor(
         return setoranList
     }
 
-    fun getVerifikasi(id: Int) {
-        return
+    // ✅ Fungsi Logout
+    fun logout() {
+        viewModelScope.launch {
+            dataStoreManager.clearToken()
+            dataStoreManager.clearRefreshToken()
+            dataStoreManager.clearUserProfile()
 
+            token = ""
+            nama = "Nama Tidak Diketahui"
+            email = "Email Tidak Diketahui"
+            nim = "NIM Tidak Diketahui"
+            error = ""
+            status = LoadingStatus.SUCCESS
+            setoranList.clear()
+        }
     }
 }
-

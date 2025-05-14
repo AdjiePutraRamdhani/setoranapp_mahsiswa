@@ -89,6 +89,10 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.0")
+    implementation ("androidx.compose.material:material-icons-extended:<version>")
+
+
+
 
     // Library Aliases
     implementation(libs.androidx.core.ktx)

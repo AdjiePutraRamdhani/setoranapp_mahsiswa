@@ -1,20 +1,22 @@
 package com.example.setoranhapalanmahasiswa.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
@@ -23,8 +25,8 @@ import kotlinx.coroutines.launch
 fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     var nim by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
     var passwordVisible by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -32,11 +34,12 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Card(
+        ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            elevation = CardDefaults.cardElevation(6.dp)
+                .padding(16.dp),
+            shape = MaterialTheme.shapes.medium,
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -44,9 +47,25 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "User Icon",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .padding(bottom = 8.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
                 Text(
-                    text = "Silahkan login di sini.",
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = "Selamat Datang",
+                    style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Text(
+                    text = "Silakan login di sini.",
+                    style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -54,9 +73,10 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                 OutlinedTextField(
                     value = nim,
                     onValueChange = { nim = it },
-                    label = { Text("Username") },
+                    label = { Text("NIM") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -65,26 +85,26 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
-                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
                             )
                         }
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
                     onClick = {
                         scope.launch {
                             try {
-                                // Validasi input tidak kosong dan hanya angka
+                                // Validasi input
                                 if (nim.isBlank()) {
                                     vm.error = "NIM tidak boleh kosong"
                                     return@launch
@@ -93,15 +113,21 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                                     vm.error = "Format NIM tidak valid"
                                     return@launch
                                 }
+                                if (password.isBlank()) {
+                                    vm.error = "Password tidak boleh kosong"
+                                    return@launch
+                                }
 
-                                // Menghapus spasi pada input
                                 val trimmedNim = nim.trim()
                                 val trimmedPassword = password.trim()
 
-                                // Memulai proses login
+                                if (trimmedPassword != trimmedNim) {
+                                    vm.error = "Password salah"
+                                    return@launch
+                                }
+
                                 vm.login(trimmedNim)
 
-                                // Jika login berhasil, navigasi ke dashboard
                                 if (vm.token.isNotEmpty()) {
                                     vm.error = ""
                                     nav.navigate("dashboard")
@@ -113,18 +139,21 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = MaterialTheme.shapes.medium
                 ) {
                     Text("Login")
                 }
 
-
                 if (vm.error.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = vm.error,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
