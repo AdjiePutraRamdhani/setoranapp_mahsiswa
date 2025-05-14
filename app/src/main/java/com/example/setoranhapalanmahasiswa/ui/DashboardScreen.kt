@@ -25,7 +25,7 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
             TopAppBar(
                 title = {
                     Text(
-                        text = if (vm.nama.isNotEmpty()) "Selamat datang, ${vm.nama}"
+                        text = if (vm.nama.isNotEmpty()) "Selamat datang bebas, ${vm.nama}"
                         else "Memuat data...",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
