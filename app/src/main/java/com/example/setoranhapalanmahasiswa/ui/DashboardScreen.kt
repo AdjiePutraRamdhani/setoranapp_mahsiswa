@@ -8,11 +8,14 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 
@@ -20,6 +23,8 @@ import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 @Composable
 fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     var currentScreen by remember { mutableStateOf("home") }
+    val tabs = listOf("Daftar Setoran", "Statistik Setoran")
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -61,34 +66,19 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
                 NavigationBarItem(
                     selected = currentScreen == "home",
                     onClick = { currentScreen = "home" },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = "Beranda"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Beranda") },
                     label = { Text("Beranda", fontSize = 12.sp) }
                 )
                 NavigationBarItem(
                     selected = currentScreen == "statistik",
                     onClick = { currentScreen = "statistik" },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.BarChart,
-                            contentDescription = "Statistik"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistik") },
                     label = { Text("Statistik", fontSize = 12.sp) }
                 )
                 NavigationBarItem(
                     selected = currentScreen == "profile",
                     onClick = { currentScreen = "profile" },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profil"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.AccountCircle, contentDescription = "Profil") },
                     label = { Text("Profil", fontSize = 12.sp) }
                 )
             }
@@ -100,16 +90,42 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
                 .fillMaxSize()
         ) {
             when (currentScreen) {
-                "home" -> SetoranListScreen(nav, vm)
-                "statistik" -> Text(
-                    "Statistik Setoran",
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 32.dp)
-                )
-                "profile" -> ProfileScreen(nav)
+                "home" -> {
+                    // Tab untuk Beranda (Setoran & Statistik)
+                    TabRow(selectedTabIndex = selectedTabIndex) {
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = { Text(title) }
+                            )
+                        }
+                    }
 
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    when (selectedTabIndex) {
+                        0 -> SetoranListScreen(nav, vm)
+                        1 -> SetoranFormScreen(nav, vm)
+                    }
+                }
+
+                "statistik" -> {
+                    Text(
+                        "Statistik Setoran",
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 32.dp)
+                    )
+                }
+
+                "profile" -> {
+                    ProfileScreen(nav)
+                }
             }
         }
     }
+
+    println("NAMA YANG DITAMPILKAN: ${vm.nama}")
 }
+

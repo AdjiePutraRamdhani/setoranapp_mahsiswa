@@ -1,14 +1,12 @@
 package com.example.setoranhapalanmahasiswa.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -17,6 +15,7 @@ import androidx.navigation.NavController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import com.example.setoranhapalanmahasiswa.viewmodel.LoadingStatus
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -28,96 +27,97 @@ fun ProfileScreen(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        when (vm.status) {
-            LoadingStatus.LOADING -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Mengambil data profil...", fontSize = 16.sp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Profil Saya", fontSize = 20.sp) }
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            when (vm.status) {
+                LoadingStatus.LOADING -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Mengambil data profil...", fontSize = 16.sp)
+                    }
                 }
-            }
 
-            LoadingStatus.SUCCESS -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Profil Card
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                        shape = MaterialTheme.shapes.medium
+                LoadingStatus.SUCCESS -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
-                            // Header Section
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Start,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AccountCircle,
-                                    contentDescription = "Profil Pengguna",
-                                    modifier = Modifier.size(40.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "Profil Pengguna",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Column(modifier = Modifier.padding(24.dp)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = "Profil Pengguna",
+                                        modifier = Modifier.size(40.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Profil Pengguna",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
 
-                            // Profil Items
-                            ProfileItem(label = "Nama", value = vm.nama)
-                            ProfileItem(label = "Email", value = vm.email)
-                            ProfileItem(label = "NIM", value = vm.nim)
+                                ProfileItem(label = "Nama", value = vm.nama)
+                                ProfileItem(label = "Email", value = vm.email)
+                                ProfileItem(label = "NIM", value = vm.nim)
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                vm.logout()
+                                navController.navigate("login") {
+                                    popUpTo("profile") { inclusive = true }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text("Logout", fontSize = 16.sp)
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Logout Button
-                    Button(
-                        onClick = {
-                            vm.logout()
-                            navController.navigate("login") {
-                                popUpTo("profile") { inclusive = true }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Text("Logout", fontSize = 16.sp)
-                    }
                 }
-            }
 
-            LoadingStatus.ERROR -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "Gagal mengambil data profil",
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        vm.error,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+                LoadingStatus.ERROR -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "Gagal mengambil data profil",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            vm.error,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                 }
             }
         }

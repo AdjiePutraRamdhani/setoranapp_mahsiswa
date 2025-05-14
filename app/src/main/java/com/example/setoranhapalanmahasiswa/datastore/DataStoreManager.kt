@@ -10,9 +10,14 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 // Ekstensi DataStore
+
+// Ekstensi untuk DataStore
+
 private val Context.dataStore by preferencesDataStore("user_preferences")
 
 class DataStoreManager @Inject constructor(private val context: Context) {
+
+    // Key untuk token, refresh token, dan data profil
 
     companion object {
         private val TOKEN_KEY = stringPreferencesKey("auth_token")
@@ -22,9 +27,9 @@ class DataStoreManager @Inject constructor(private val context: Context) {
         private val NIM_KEY = stringPreferencesKey("nim")
     }
 
-    // ======================
+    // =
     // === SAVE FUNCTIONS ===
-    // ======================
+    // =
 
     suspend fun saveToken(token: String) {
         context.dataStore.edit { it[TOKEN_KEY] = token }
@@ -42,9 +47,9 @@ class DataStoreManager @Inject constructor(private val context: Context) {
         }
     }
 
-    // ======================
+    // =
     // === READ FUNCTIONS ===
-    // ======================
+    // =
 
     val token: Flow<String?> = context.dataStore.data.map { it[TOKEN_KEY] }
 
@@ -58,9 +63,9 @@ class DataStoreManager @Inject constructor(private val context: Context) {
 
     val userNim: Flow<String?> = context.dataStore.data.map { it[NIM_KEY] }
 
-    // =======================
+    // ==
     // === CLEAR FUNCTIONS ===
-    // =======================
+    // ==
 
     suspend fun clearToken() {
         context.dataStore.edit { it.remove(TOKEN_KEY) }
@@ -80,5 +85,67 @@ class DataStoreManager @Inject constructor(private val context: Context) {
 
     suspend fun clearAllData() {
         context.dataStore.edit { it.clear() }
+
+        // Menyimpan token ke DataStore
+        suspend fun saveToken(token: String) {
+            context.dataStore.edit { preferences ->
+                preferences[TOKEN_KEY] = token
+            }
+        }
+
+        // Mengambil token dari DataStore
+        val token: Flow<String?> = context.dataStore.data
+            .map { preferences ->
+                preferences[TOKEN_KEY]
+            }
+
+        // Menyimpan refresh token ke DataStore
+        suspend fun saveRefreshToken(refreshToken: String) {
+            context.dataStore.edit { preferences ->
+                preferences[REFRESH_TOKEN_KEY] = refreshToken
+            }
+        }
+
+        // Mengambil refresh token dari DataStore
+        suspend fun getRefreshToken(): String? {
+            return context.dataStore.data
+                .map { preferences -> preferences[REFRESH_TOKEN_KEY] }
+                .firstOrNull()
+        }
+
+        // Menyimpan data profil ke DataStore
+        suspend fun saveUserProfile(name: String, email: String, nim: String) {
+            context.dataStore.edit { preferences ->
+                preferences[NAME_KEY] = name
+                preferences[EMAIL_KEY] = email
+                preferences[NIM_KEY] = nim
+            }
+        }
+
+        // Mengambil nama dari DataStore
+        val userName: Flow<String?> = context.dataStore.data
+            .map { preferences ->
+                preferences[NAME_KEY]
+            }
+
+        // Mengambil email dari DataStore
+        val userEmail: Flow<String?> = context.dataStore.data
+            .map { preferences ->
+                preferences[EMAIL_KEY]
+            }
+
+        // Mengambil NIM dari DataStore
+        val userNim: Flow<String?> = context.dataStore.data
+            .map { preferences ->
+                preferences[NIM_KEY]
+            }
+
+        // Hapus semua data
+        suspend fun clearData() {
+            context.dataStore.edit { preferences ->
+                preferences.clear()
+            }
+
+        }
     }
 }
