@@ -26,6 +26,7 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     var nim by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
     Box(
@@ -106,36 +107,32 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                             try {
                                 // Validasi input
                                 if (nim.isBlank()) {
-                                    vm.error = "NIM tidak boleh kosong"
+                                    errorMessage = "NIM tidak boleh kosong"
                                     return@launch
                                 }
                                 if (!nim.matches(Regex("^[0-9]+$"))) {
-                                    vm.error = "Format NIM tidak valid"
+                                    errorMessage = "Format NIM tidak valid"
                                     return@launch
                                 }
                                 if (password.isBlank()) {
-                                    vm.error = "Password tidak boleh kosong"
+                                    errorMessage = "Password tidak boleh kosong"
                                     return@launch
                                 }
 
-                                val trimmedNim = nim.trim()
-                                val trimmedPassword = password.trim()
+                                // Login
+                                vm.login(nim)
 
-                                if (trimmedPassword != trimmedNim) {
-                                    vm.error = "Password salah"
-                                    return@launch
-                                }
-
-                                vm.login(trimmedNim)
-
+                                // Cek status login
                                 if (vm.token.isNotEmpty()) {
-                                    vm.error = ""
-                                    nav.navigate("dashboard")
+                                    errorMessage = ""
+                                    nav.navigate("dashboard") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
                                 } else {
-                                    vm.error = "Login gagal: Token tidak ditemukan"
+                                    errorMessage = "Login gagal: Token tidak ditemukan"
                                 }
                             } catch (e: Exception) {
-                                vm.error = "Login gagal: ${e.message}"
+                                errorMessage = "Login gagal: ${e.message}"
                             }
                         }
                     },
@@ -147,10 +144,11 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                     Text("Login")
                 }
 
-                if (vm.error.isNotEmpty()) {
+                // Tampilkan pesan error jika ada
+                if (errorMessage.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = vm.error,
+                        text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodySmall,
@@ -161,3 +159,4 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
         }
     }
 }
+

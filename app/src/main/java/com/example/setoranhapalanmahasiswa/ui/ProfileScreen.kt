@@ -21,6 +21,13 @@ fun ProfileScreen(
     navController: NavController,
     vm: AuthViewModel = hiltViewModel()
 ) {
+    val status by vm.status.collectAsState()
+    val errorMessage by vm.error.collectAsState()
+    val nama by vm.nama.collectAsState()
+    val email by vm.email.collectAsState()
+    val nim by vm.nim.collectAsState()
+
+
     LaunchedEffect(vm.token) {
         if (vm.token.isNotEmpty()) {
             vm.fetchUserInfo(vm.token)
@@ -41,7 +48,7 @@ fun ProfileScreen(
                 .padding(16.dp),
             contentAlignment = Alignment.TopCenter
         ) {
-            when (vm.status) {
+            when (status) {
                 LoadingStatus.LOADING -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
@@ -80,9 +87,10 @@ fun ProfileScreen(
                                     )
                                 }
 
-                                ProfileItem(label = "Nama", value = vm.nama)
-                                ProfileItem(label = "Email", value = vm.email)
-                                ProfileItem(label = "NIM", value = vm.nim)
+                                ProfileItem(label = "Nama", value = nama)
+                                ProfileItem(label = "Email", value = email)
+                                ProfileItem(label = "NIM", value = nim)
+
                             }
                         }
 
@@ -112,17 +120,23 @@ fun ProfileScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            vm.error,
+                            text = errorMessage.orEmpty(),
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
+
+                else -> {
+                    // Untuk menangani kasus default jika ada perubahan status di masa depan
+                    Text("Status tidak diketahui", fontSize = 16.sp)
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun ProfileItem(label: String, value: String) {
