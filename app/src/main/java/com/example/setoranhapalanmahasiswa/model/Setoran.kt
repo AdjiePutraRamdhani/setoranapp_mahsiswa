@@ -1,23 +1,8 @@
 package com.example.setoranhapalanmahasiswa.model
 
-@kotlinx.serialization.Serializable
-data class SetoranResponse(
-    val response: Boolean,       // Ubah dari status
-    val message: String,
-    val data: SetoranDataWrapper
-)
+import kotlinx.serialization.Serializable
 
-@kotlinx.serialization.Serializable
-data class SetoranDataWrapper(
-    val setoran: SetoranDetailWrapper  // Ubah dari setorans
-)
-
-@kotlinx.serialization.Serializable
-data class SetoranDetailWrapper(
-    val detail: List<Setoran>
-)
-
-@kotlinx.serialization.Serializable
+@Serializable
 data class Setoran(
     val id: String,
     val nama: String,        // Sudah sesuai
@@ -27,7 +12,7 @@ data class Setoran(
     val info_setoran: InfoSetoran? = null
 )
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class InfoSetoran(
     val id: String? = null,
     val tgl_setoran: String? = null,
@@ -35,7 +20,7 @@ data class InfoSetoran(
     val dosen_yang_mengesahkan: Dosen? = null
 )
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class Dosen(
     val nip: String? = null,
     val nama: String? = null,

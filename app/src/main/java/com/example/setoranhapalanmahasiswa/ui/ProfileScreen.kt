@@ -98,7 +98,8 @@ fun ProfileScreen(
                             onClick = {
                                 vm.logout()
                                 navController.navigate("login") {
-                                    popUpTo("profile") { inclusive = true }
+                                    popUpTo(0) { inclusive = true }
+                                    launchSingleTop = true
                                 }
                             },
                             modifier = Modifier
