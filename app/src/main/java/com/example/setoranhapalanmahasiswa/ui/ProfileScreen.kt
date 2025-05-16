@@ -42,7 +42,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil Saya", fontSize = 20.sp) }
+                title = { Text("", fontSize = 20.sp) }
             )
         }
     ) { padding ->
@@ -67,92 +67,79 @@ fun ProfileScreen(
                 }
 
                 LoadingStatus.SUCCESS -> {
-                    Column(
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
-                        LazyColumn(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            item {
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 16.dp),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                                    shape = MaterialTheme.shapes.medium
-                                ) {
-                                    Column(modifier = Modifier.padding(24.dp)) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(bottom = 16.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.AccountCircle,
-                                                contentDescription = "Profil Pengguna",
-                                                modifier = Modifier.size(40.dp),
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = "Profil Pengguna",
-                                                fontSize = 20.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-
-                                ProfileItem(label = "Nama", value = nama)
-                                ProfileItem(label = "Email", value = email)
-                                ProfileItem(label = "NIM", value = nim)
-
-                                        // Label Mahasiswa
-                                        Text(
-                                            text = "Mahasiswa",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 18.sp,
-                                            modifier = Modifier.padding(bottom = 8.dp)
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Column(modifier = Modifier.padding(24.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.AccountCircle,
+                                            contentDescription = "Profil Pengguna",
+                                            modifier = Modifier.size(40.dp),
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
-
-                                        // Informasi Mahasiswa
-                                        ProfileItem("Nama", nama)
-                                        ProfileItem("Email", email)
-                                        ProfileItem("NIM", nim)
-                                        ProfileItem("Angkatan", angkatan)
-                                        ProfileItem("Semester", semester.toString())
-
-                                        // Informasi Dosen PA
-                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = "Dosen PA",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 18.sp,
-                                            modifier = Modifier.padding(top = 8.dp)
+                                            text = "Profil Pengguna",
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold
                                         )
-                                        ProfileItem("Nama", dosenPaNama)
-                                        ProfileItem("Email", dosenPaEmail)
-                                        ProfileItem("NIP", dosenPaNip)
                                     }
+
+                                    Text(
+                                        text = "Mahasiswa",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+
+                                    ProfileItem("Nama", nama)
+                                    ProfileItem("Email", email)
+                                    ProfileItem("NIM", nim)
+                                    ProfileItem("Angkatan", angkatan)
+                                    ProfileItem("Semester", semester.toString())
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Dosen PA",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                    ProfileItem("Nama", dosenPaNama)
+                                    ProfileItem("Email", dosenPaEmail)
+                                    ProfileItem("NIP", dosenPaNip)
                                 }
                             }
                         }
 
-                        // Tombol Logout selalu di bawah
-                        Button(
-                            onClick = {
-                                vm.logout()
-                                navController.navigate("login") {
-                                    popUpTo(0) { inclusive = true }
-                                    launchSingleTop = true
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 0.dp),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text("Logout", fontSize = 16.sp)
+                        // Tombol logout ikut scroll
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    vm.logout()
+                                    navController.navigate("login") {
+                                        popUpTo(0) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Text("Logout", fontSize = 16.sp)
+                            }
                         }
                     }
                 }
@@ -181,7 +168,6 @@ fun ProfileScreen(
                 }
 
                 else -> {
-                    // Untuk menangani kasus default jika ada perubahan status di masa depan
                     Text("Status tidak diketahui", fontSize = 16.sp)
                 }
             }

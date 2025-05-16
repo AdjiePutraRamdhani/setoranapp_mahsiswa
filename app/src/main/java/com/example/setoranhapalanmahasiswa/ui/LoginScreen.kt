@@ -65,7 +65,7 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                 )
 
                 Text(
-                    text = "Silakan login di sini.",
+                    text = "Silakan masuk di sini.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 24.dp)
