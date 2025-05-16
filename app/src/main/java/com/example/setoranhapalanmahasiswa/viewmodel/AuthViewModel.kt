@@ -1,12 +1,12 @@
 package com.example.setoranhapalanmahasiswa.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.setoranhapalanmahasiswa.datastore.DataStoreManager
 import com.example.setoranhapalanmahasiswa.model.LoginResponse
 import com.example.setoranhapalanmahasiswa.model.Setoran
+import com.example.setoranhapalanmahasiswa.model.UserInfo
 import com.example.setoranhapalanmahasiswa.network.ApiClient
 import com.example.setoranhapalanmahasiswa.network.getSetoranListFromApi
 import com.example.setoranhapalanmahasiswa.network.getUserProfileFromApi
@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
-// State untuk menandakan status pengambilan data
 enum class LoadingStatus {
     LOADING, SUCCESS, ERROR
 }
@@ -33,7 +32,8 @@ class AuthViewModel @Inject constructor(
     private val dataStoreManager: DataStoreManager
 ) : ViewModel() {
 
-    var token by mutableStateOf("")
+    var token = ""
+
     private val _nama = MutableStateFlow("Nama Tidak Diketahui")
     val nama: StateFlow<String> = _nama
 
@@ -43,6 +43,21 @@ class AuthViewModel @Inject constructor(
     private val _nim = MutableStateFlow("NIM Tidak Diketahui")
     val nim: StateFlow<String> = _nim
 
+    private val _angkatan = MutableStateFlow("Angkatan Tidak Diketahui")
+    val angkatan: StateFlow<String> = _angkatan
+
+    private val _semester = MutableStateFlow(0)
+    val semester: StateFlow<Int> = _semester
+
+    private val _dosenPaNama = MutableStateFlow("Nama Dosen Tidak Diketahui")
+    val dosenPaNama: StateFlow<String> = _dosenPaNama
+
+    private val _dosenPaEmail = MutableStateFlow("Email Dosen Tidak Diketahui")
+    val dosenPaEmail: StateFlow<String> = _dosenPaEmail
+
+    private val _dosenPaNip = MutableStateFlow("NIP Dosen Tidak Diketahui")
+    val dosenPaNip: StateFlow<String> = _dosenPaNip
+
     private val _error = MutableStateFlow("")
     val error: StateFlow<String> = _error
 
@@ -51,6 +66,9 @@ class AuthViewModel @Inject constructor(
 
     private val _setoranList = MutableStateFlow<List<Setoran>>(emptyList())
     val setoranList: StateFlow<List<Setoran>> = _setoranList
+
+    private val _userInfo = MutableStateFlow<UserInfo?>(null)
+    val userInfo: StateFlow<UserInfo?> = _userInfo
 
     init {
         viewModelScope.launch {
@@ -69,7 +87,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Fungsi login mahasiswa
     fun login(nim: String) {
         viewModelScope.launch {
             if (nim.isBlank()) {
@@ -82,8 +99,6 @@ class AuthViewModel @Inject constructor(
                 token = newToken
                 _error.value = ""
                 updateStatus(LoadingStatus.SUCCESS)
-
-                // Ambil data profil dan daftar setoran
                 fetchUserInfo(token)
                 fetchSetoranList()
             } catch (e: Exception) {
@@ -93,7 +108,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Fungsi login ke server
     private suspend fun loginMahasiswa(nim: String): String {
         val response = ApiClient.client.submitForm(
             url = "https://id.tif.uin-suska.ac.id/realms/dev/protocol/openid-connect/token",
@@ -120,15 +134,22 @@ class AuthViewModel @Inject constructor(
         return body.accessToken
     }
 
-    // Fungsi mengambil informasi pengguna
     fun fetchUserInfo(token: String) {
         viewModelScope.launch {
             updateStatus(LoadingStatus.LOADING)
             try {
                 val profile = getUserProfileFromApi(token)
+                _userInfo.value = profile
+
                 _nama.value = profile?.name ?: "Nama Tidak Diketahui"
                 _email.value = profile?.email ?: "Email Tidak Diketahui"
                 _nim.value = profile?.preferred_username ?: "NIM Tidak Diketahui"
+                _angkatan.value = profile?.angkatan ?: "Angkatan Tidak Diketahui"
+                _semester.value = profile?.semester ?: 0
+                _dosenPaNama.value = profile?.dosen_pa?.nama ?: "Nama Dosen Tidak Diketahui"
+                _dosenPaEmail.value = profile?.dosen_pa?.email ?: "Email Dosen Tidak Diketahui"
+                _dosenPaNip.value = profile?.dosen_pa?.nip ?: "NIP Dosen Tidak Diketahui"
+
                 updateStatus(LoadingStatus.SUCCESS)
             } catch (e: Exception) {
                 _error.value = "Gagal mengambil profil: ${e.message}"
@@ -137,13 +158,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Fungsi mengambil daftar setoran
     suspend fun fetchSetoranList() {
         updateStatus(LoadingStatus.LOADING)
         try {
             val setoranData = getSetoranListFromApi(token)
             if (setoranData.isNullOrEmpty()) throw Exception("Data setoran tidak tersedia.")
-
             _setoranList.value = setoranData
             updateStatus(LoadingStatus.SUCCESS)
             Log.d("AuthViewModel", "Berhasil mengambil ${setoranData.size} data setoran")
@@ -153,11 +172,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun updateStatus(newStatus: LoadingStatus) {
-        _status.value = newStatus
-    }
-
-    // Fungsi logout
     fun logout() {
         viewModelScope.launch {
             dataStoreManager.clearToken()
@@ -167,16 +181,23 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // Reset data pengguna saat logout
     private fun resetUserData() {
         token = ""
         _nama.value = "Nama Tidak Diketahui"
         _email.value = "Email Tidak Diketahui"
         _nim.value = "NIM Tidak Diketahui"
+        _angkatan.value = "Angkatan Tidak Diketahui"
+        _semester.value = 0
+        _dosenPaNama.value = "Nama Dosen Tidak Diketahui"
+        _dosenPaEmail.value = "Email Dosen Tidak Diketahui"
+        _dosenPaNip.value = "NIP Dosen Tidak Diketahui"
         _error.value = ""
-        updateStatus(LoadingStatus.SUCCESS)
         _setoranList.value = emptyList()
+        _userInfo.value = null
+        updateStatus(LoadingStatus.SUCCESS)
+    }
+
+    private fun updateStatus(newStatus: LoadingStatus) {
+        _status.value = newStatus
     }
 }
-
-

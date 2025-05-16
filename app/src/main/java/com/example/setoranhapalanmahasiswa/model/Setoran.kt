@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Setoran(
     val id: String,
-    val nama: String,        // Sudah sesuai
-    val nama_arab: String,   // Sudah sesuai
+    val nama: String,
+    val nama_arab: String,
     val label: String,
     val sudah_setor: Boolean,
     val info_setoran: InfoSetoran? = null

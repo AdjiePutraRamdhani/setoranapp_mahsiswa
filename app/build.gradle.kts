@@ -65,6 +65,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("io.ktor:ktor-client-auth:2.3.0")
     implementation("io.ktor:ktor-client-logging:2.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
 
     // Serialization
@@ -90,6 +91,8 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.0")
     implementation ("androidx.compose.material:material-icons-extended:<version>")
+    implementation("androidx.compose.material3:material3")
+
 
 
 

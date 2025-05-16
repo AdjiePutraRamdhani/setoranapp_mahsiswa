@@ -1,6 +1,7 @@
 package com.example.setoranhapalanmahasiswa.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
@@ -26,7 +27,11 @@ fun ProfileScreen(
     val nama by vm.nama.collectAsState()
     val email by vm.email.collectAsState()
     val nim by vm.nim.collectAsState()
-
+    val angkatan by vm.angkatan.collectAsState()
+    val semester by vm.semester.collectAsState()
+    val dosenPaNama by vm.dosenPaNama.collectAsState()
+    val dosenPaEmail by vm.dosenPaEmail.collectAsState()
+    val dosenPaNip by vm.dosenPaNip.collectAsState()
 
     LaunchedEffect(vm.token) {
         if (vm.token.isNotEmpty()) {
@@ -45,12 +50,16 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            contentAlignment = Alignment.TopCenter
         ) {
             when (status) {
                 LoadingStatus.LOADING -> {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("Mengambil data profil...", fontSize = 16.sp)
@@ -59,41 +68,77 @@ fun ProfileScreen(
 
                 LoadingStatus.SUCCESS -> {
                     Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                            shape = MaterialTheme.shapes.medium
+                        LazyColumn(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Column(modifier = Modifier.padding(24.dp)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(bottom = 16.dp)
+                            item {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 16.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                    shape = MaterialTheme.shapes.medium
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountCircle,
-                                        contentDescription = "Profil Pengguna",
-                                        modifier = Modifier.size(40.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "Profil Pengguna",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                    Column(modifier = Modifier.padding(24.dp)) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(bottom = 16.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.AccountCircle,
+                                                contentDescription = "Profil Pengguna",
+                                                modifier = Modifier.size(40.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Profil Pengguna",
+                                                fontSize = 20.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
 
                                 ProfileItem(label = "Nama", value = nama)
                                 ProfileItem(label = "Email", value = email)
                                 ProfileItem(label = "NIM", value = nim)
 
+                                        // Label Mahasiswa
+                                        Text(
+                                            text = "Mahasiswa",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                            modifier = Modifier.padding(bottom = 8.dp)
+                                        )
+
+                                        // Informasi Mahasiswa
+                                        ProfileItem("Nama", nama)
+                                        ProfileItem("Email", email)
+                                        ProfileItem("NIM", nim)
+                                        ProfileItem("Angkatan", angkatan)
+                                        ProfileItem("Semester", semester.toString())
+
+                                        // Informasi Dosen PA
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Text(
+                                            text = "Dosen PA",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        )
+                                        ProfileItem("Nama", dosenPaNama)
+                                        ProfileItem("Email", dosenPaEmail)
+                                        ProfileItem("NIP", dosenPaNip)
+                                    }
+                                }
                             }
                         }
 
+                        // Tombol Logout selalu di bawah
                         Button(
                             onClick = {
                                 vm.logout()
@@ -104,7 +149,7 @@ fun ProfileScreen(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = 0.dp),
                             shape = MaterialTheme.shapes.medium
                         ) {
                             Text("Logout", fontSize = 16.sp)
@@ -113,7 +158,13 @@ fun ProfileScreen(
                 }
 
                 LoadingStatus.ERROR -> {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         Text(
                             "Gagal mengambil data profil",
                             color = MaterialTheme.colorScheme.error,
@@ -155,3 +206,4 @@ fun ProfileItem(label: String, value: String) {
         )
     }
 }
+

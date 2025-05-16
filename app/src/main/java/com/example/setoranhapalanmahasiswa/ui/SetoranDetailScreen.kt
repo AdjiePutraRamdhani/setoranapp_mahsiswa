@@ -14,7 +14,11 @@ import com.example.setoranhapalanmahasiswa.viewmodel.LoadingStatus
 import kotlinx.coroutines.launch
 
 @Composable
-fun SetoranDetailScreen(setoranId: String, nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
+fun SetoranDetailScreen(
+    setoranId: String,
+    nav: NavHostController,
+    vm: AuthViewModel = hiltViewModel()
+) {
     val scope = rememberCoroutineScope()
     val daftar by vm.setoranList.collectAsState()
     val status by vm.status.collectAsState()
@@ -54,18 +58,22 @@ fun SetoranDetailScreen(setoranId: String, nav: NavHostController, vm: AuthViewM
         Spacer(Modifier.height(16.dp))
 
         when {
-            status == LoadingStatus.LOADING -> CircularProgressIndicator()
-            errorMessage.isNotBlank() -> Text(
-                "Error: $errorMessage",
-                color = MaterialTheme.colorScheme.error
-            )
+            status == LoadingStatus.LOADING -> {
+                CircularProgressIndicator()
+            }
+
+            errorMessage.isNotBlank() -> {
+                Text(
+                    "Error: $errorMessage",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             setoran != null -> {
-                // Penanganan info setoran
                 setoran?.info_setoran?.let { info ->
                     Text("Tanggal Setoran: ${info.tgl_setoran ?: "Tidak tersedia"}")
                     Text("Tanggal Validasi: ${info.tgl_validasi ?: "Belum divalidasi"}")
 
-                    // Penanganan dosen
                     info.dosen_yang_mengesahkan?.let { dosen ->
                         Text("Dosen Pengesah: ${dosen.nama ?: "Tidak diketahui"}")
                         Log.d("SetoranDetailScreen", "Dosen: ${dosen.nama}")
@@ -77,9 +85,10 @@ fun SetoranDetailScreen(setoranId: String, nav: NavHostController, vm: AuthViewM
                     Text("Kembali")
                 }
             }
-            else -> Text("Data setoran tidak ditemukan.")
+
+            else -> {
+                Text("Data setoran tidak ditemukan.")
+            }
         }
     }
 }
-
-
