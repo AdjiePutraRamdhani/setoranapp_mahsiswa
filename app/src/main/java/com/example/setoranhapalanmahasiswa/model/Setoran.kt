@@ -26,3 +26,11 @@ data class Dosen(
     val nama: String? = null,
     val email: String? = null
 )
+
+@Serializable
+data class RingkasanSetoran(
+    val total_wajib_setor: Int = 0,
+    val total_sudah_setor: Int = 0,
+    val total_belum_setor: Int = 0,
+    val persentase_progres_setor: Int = 0
+)
