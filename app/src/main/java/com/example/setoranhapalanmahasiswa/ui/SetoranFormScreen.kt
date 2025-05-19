@@ -82,8 +82,8 @@ fun SetoranFormScreen(
                         (sudahSetor * 100) / totalSetoran
                     } else 0
 
-                    val warnaSudahSetor = colors.primary
-                    val warnaBelumSetor = colors.error
+                    val warnaSudahSetor = Color(0xFF4CAF50) // Hijau
+                    val warnaBelumSetor = Color(0xFFF44336) // Merah
 
                     val values = listOf(sudahSetor.toFloat(), belumSetor.toFloat())
                     val totalValues = values.sum()
@@ -136,8 +136,7 @@ fun SetoranFormScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
-                            modifier = Modifier
-                                .padding(20.dp),
+                            modifier = Modifier.padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             InfoRow(label = "Total Setoran", value = "$totalSetoran")
