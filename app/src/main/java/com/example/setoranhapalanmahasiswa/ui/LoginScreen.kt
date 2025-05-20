@@ -144,7 +144,6 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                     Text("Login")
                 }
 
-                // Tampilkan pesan error jika ada
                 if (errorMessage.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(

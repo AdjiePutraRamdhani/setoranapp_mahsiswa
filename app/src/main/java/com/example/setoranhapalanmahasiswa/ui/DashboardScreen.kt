@@ -104,8 +104,6 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
             }
         }
     }
-
-    // Cetak nama di log untuk memastikan data sudah diambil
     println("NAMA YANG DITAMPILKAN: $nama")
 }
 

@@ -6,6 +6,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,12 +21,12 @@ private fun JsonElement?.stringOrEmpty(): String =
 private fun JsonElement?.intOrZero(): Int =
     if (this is JsonPrimitive) this.intOrNull ?: 0 else 0
 
+private fun JsonElement?.doubleOrZero(): Double =
+    if (this is JsonPrimitive) this.doubleOrNull ?: 0.0 else 0.0
+
 private fun JsonElement?.boolOrFalse(): Boolean =
     if (this is JsonPrimitive) this.booleanOrNull ?: false else false
 
-/**
- * Fungsi untuk mengambil data setoran mahasiswa dari API
- */
 suspend fun getSetoranListFromApi(token: String): List<Setoran> = withContext(Dispatchers.IO) {
     try {
         val response: HttpResponse = ApiClient.client.get(
@@ -86,9 +87,6 @@ suspend fun getSetoranListFromApi(token: String): List<Setoran> = withContext(Di
     }
 }
 
-/**
- * Fungsi untuk mengambil data profil mahasiswa dari API Keycloak dan melengkapi dari API Setoran
- */
 suspend fun getUserProfileFromApi(token: String): UserInfo? = withContext(Dispatchers.IO) {
     try {
         val userResponse: HttpResponse = ApiClient.client.get(
@@ -97,6 +95,10 @@ suspend fun getUserProfileFromApi(token: String): UserInfo? = withContext(Dispat
             headers {
                 append(HttpHeaders.Authorization, "Bearer $token")
             }
+        }
+
+        if (userResponse.status.value != 200) {
+            throw Exception("Gagal mengambil profil: ${userResponse.status.value}")
         }
 
         val userJson = userResponse.body<JsonObject>()
@@ -143,3 +145,55 @@ suspend fun getUserProfileFromApi(token: String): UserInfo? = withContext(Dispat
         return@withContext null
     }
 }
+
+suspend fun getRingkasanSetoranFromApi(token: String): List<RingkasanSetoran> = withContext(Dispatchers.IO) {
+    try {
+        Log.d("API Ringkasan", "Mulai ambil ringkasan setoran...")
+
+        val response: HttpResponse = ApiClient.client.get(
+            "https://api.tif.uin-suska.ac.id/setoran-dev/v1/mahasiswa/setoran-saya"
+        ) {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer $token")
+            }
+        }
+
+        val responseText = response.bodyAsText()
+        Log.d("API Ringkasan", "Raw response text: $responseText")
+
+        val responseJson = Json.parseToJsonElement(responseText).jsonObject
+        val ringkasanArray = responseJson["data"]
+            ?.jsonObject
+            ?.get("setoran")
+            ?.jsonObject
+            ?.get("ringkasan")
+            ?.jsonArray
+
+        if (ringkasanArray == null || ringkasanArray.isEmpty()) {
+            Log.e("API Ringkasan", "Ringkasan tidak ditemukan dalam data JSON")
+            return@withContext emptyList()
+        }
+
+        Log.d("API Ringkasan", "Ringkasan ditemukan: $ringkasanArray")
+
+        val ringkasanList = ringkasanArray.map { item ->
+            val obj = item.jsonObject
+            RingkasanSetoran(
+                label = obj["label"].stringOrEmpty(),
+                total_wajib_setor = obj["total_wajib_setor"].intOrZero(),
+                total_sudah_setor = obj["total_sudah_setor"].intOrZero(),
+                total_belum_setor = obj["total_belum_setor"].intOrZero(),
+                persentase_progres_setor = obj["persentase_progres_setor"].doubleOrZero()
+            )
+        }
+
+        return@withContext ringkasanList
+
+    } catch (e: Exception) {
+        Log.e("API Ringkasan", "Gagal ambil ringkasan: ${e.message}")
+        e.printStackTrace()
+        return@withContext emptyList()
+    }
+}
+
+

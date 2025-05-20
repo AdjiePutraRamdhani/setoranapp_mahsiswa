@@ -38,7 +38,6 @@ fun SetoranHafalanApp() {
             composable("setoran_list") { SetoranListScreen(navController) }
             composable("setoran_form") { SetoranFormScreen(navController) }
 
-            // Rute detail verifikasi setoran dengan ID
             composable("setoran_verifikasi/{setoranId}") { backStackEntry ->
                 val setoranId = backStackEntry.arguments?.getString("setoranId")
                 if (setoranId != null) {

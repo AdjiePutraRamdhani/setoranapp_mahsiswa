@@ -130,8 +130,8 @@ fun SetoranListScreen(
 
 fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserInfo) {
     val pdfDocument = PdfDocument()
-    val pageWidth = 842            // ukuran A4 landscape (≈ 297 mm)
-    val pageHeight = 1191          // ukuran A4 portrait  (≈ 210 mm)
+    val pageWidth = 842            // ukuran A4 landscape
+    val pageHeight = 1191          // ukuran A4 portrait
     val marginTop = 40f
     val lineHeight = 20f
 
@@ -173,10 +173,10 @@ fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserI
     }
 
     /* ---------- Ukuran kolom ---------- */
-    val columnWidths = listOf(30f, 130f, 160f, 170f, 190f)             // total: 680f
+    val columnWidths = listOf(30f, 130f, 160f, 170f, 190f)
     val tableWidth = columnWidths.sum()
     val tableStartX =
-        (pageWidth - tableWidth) / 2f                    // posisi X agar tabel di tengah
+        (pageWidth - tableWidth) / 2f
 
     /* ---------- Hitung posisi kolom ---------- */
     val columns = mutableListOf<Float>()
@@ -217,10 +217,10 @@ fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserI
 
     /* ---------- Data mahasiswa ---------- */
     y += 80f
-    canvas.drawText("Nama                : ${mahasiswa.name}", tableStartX, y, titlePaint)
+    canvas.drawText("Nama: ${mahasiswa.name}", tableStartX, y, titlePaint)
     y += lineHeight
     canvas.drawText(
-        "NIM                 : ${mahasiswa.preferred_username}",
+        "NIM   : ${mahasiswa.preferred_username}",
         tableStartX,
         y,
         titlePaint
