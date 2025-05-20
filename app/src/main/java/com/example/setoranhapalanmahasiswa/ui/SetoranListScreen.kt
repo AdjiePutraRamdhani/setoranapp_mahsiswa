@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,9 +36,11 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 @Composable
-fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
+fun SetoranListScreen(
+    nav: NavHostController,
+    vm: AuthViewModel = hiltViewModel()
+) {
     val daftar by vm.setoranList.collectAsState()
     val status by vm.status.collectAsState()
     val errorMessage by vm.error.collectAsState()
@@ -123,31 +127,38 @@ fun SetoranListScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel(
         }
     }
 }
+
 fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserInfo) {
     val pdfDocument = PdfDocument()
-    val pageWidth = 595
-    val pageHeight = 842
-    val margin = 40
-    val lineHeight = 24f
+    val pageWidth = 842            // ukuran A4 landscape (≈ 297 mm)
+    val pageHeight = 1191          // ukuran A4 portrait  (≈ 210 mm)
+    val marginTop = 40f
+    val lineHeight = 20f
 
-    val paint = Paint().apply { textSize = 12f }
+    /* ---------- Paint ---------- */
+    val bodyPaint = Paint().apply {
+        textSize = 12f
+        textAlign = Paint.Align.CENTER
+    }
     val boldPaint = Paint().apply {
         textSize = 12f
         isFakeBoldText = true
         color = Color.BLACK
+        textAlign = Paint.Align.LEFT
     }
     val titlePaint = Paint().apply {
+        textSize = 12f
+        color = Color.BLACK
+        textAlign = Paint.Align.LEFT
+    }
+    val bigTitlePaint = Paint().apply {
         textSize = 14f
         isFakeBoldText = true
         color = Color.BLACK
-    }
-    val bigTitlePaint = Paint().apply {
-        textSize = 16f
-        isFakeBoldText = true
-        color = Color.BLACK
+        textAlign = Paint.Align.LEFT
     }
     val linePaint = Paint().apply {
-        strokeWidth = 1.2f
+        strokeWidth = 1f
         color = Color.BLACK
     }
     val headerTextPaint = Paint().apply {
@@ -161,110 +172,122 @@ fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserI
         color = Color.BLACK
     }
 
-    val columns = listOf(
-        margin.toFloat(),
-        margin + 30f,
-        margin + 130f,
-        margin + 250f,
-        margin + 370f
+    /* ---------- Ukuran kolom ---------- */
+    val columnWidths = listOf(30f, 130f, 160f, 170f, 190f)             // total: 680f
+    val tableWidth = columnWidths.sum()
+    val tableStartX =
+        (pageWidth - tableWidth) / 2f                    // posisi X agar tabel di tengah
+
+    /* ---------- Hitung posisi kolom ---------- */
+    val columns = mutableListOf<Float>()
+    var currentX = tableStartX
+    columns.add(currentX)
+    columnWidths.forEach { width ->
+        currentX += width
+        columns.add(currentX)
+    }
+
+    /* ---------- Mulai halaman ---------- */
+    val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+    val page = pdfDocument.startPage(pageInfo)
+    val canvas: Canvas = page.canvas
+
+    var y = marginTop
+
+    /* ---------- Kop surat ---------- */
+    val logo = BitmapFactory.decodeResource(context.resources, R.drawable.logo_uin)
+    val logoSize = 60f
+    canvas.drawBitmap(
+        logo,
+        null,
+        RectF(tableStartX, y, tableStartX + logoSize, y + logoSize),
+        null
     )
 
-    var pageIndex = 0
-    var y = margin + 30f
+    val kopX = tableStartX + logoSize + 12f
+    canvas.drawText("KARTU MUROJA'AH JUZ 30", kopX, y + 12f, bigTitlePaint)
+    canvas.drawText("PROGRAM STUDI TEKNIK INFORMATIKA", kopX, y + 28f, titlePaint)
+    canvas.drawText("FAKULTAS SAINS DAN TEKNOLOGI", kopX, y + 44f, titlePaint)
+    canvas.drawText(
+        "UNIVERSITAS ISLAM NEGERI SULTAN SYARIF KASIM RIAU",
+        kopX,
+        y + 60f,
+        titlePaint
+    )
 
-    fun startNewPage(): Pair<PdfDocument.Page, Canvas> {
-        pageIndex++
-        val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageIndex).create()
-        val page = pdfDocument.startPage(pageInfo)
-        return page to page.canvas
-    }
-
-    fun drawCenteredText(canvas: Canvas, text: String, left: Float, right: Float, baseline: Float, paint: Paint) {
-        val centerX = (left + right) / 2
-        val textWidth = paint.measureText(text)
-        canvas.drawText(text, centerX - textWidth / 2, baseline, paint)
-    }
-
-    fun drawHeader(canvas: Canvas) {
-        y = margin.toFloat()
-
-        val logo = BitmapFactory.decodeResource(context.resources, R.drawable.logo_uin)
-        canvas.drawBitmap(logo, null, Rect(margin, y.toInt(), margin + 60, y.toInt() + 60), null)
-
-        canvas.drawText("KARTU MUROJA'AH JUZ 30", margin + 80f, y + 10f, bigTitlePaint)
-        canvas.drawText("PROGRAM STUDI TEKNIK INFORMATIKA", margin + 80f, y + 30f, titlePaint)
-        canvas.drawText("FAKULTAS SAINS DAN TEKNOLOGI", margin + 80f, y + 45f, titlePaint)
-        canvas.drawText("UNIVERSITAS ISLAM NEGERI SULTAN SYARIF KASIM RIAU", margin + 80f, y + 60f, titlePaint)
-
-        y += 80f
-        canvas.drawText("Nama                : ${mahasiswa.name}", margin.toFloat(), y, paint)
-        y += lineHeight
-        canvas.drawText("NIM                 : ${mahasiswa.preferred_username}", margin.toFloat(), y, paint)
-        y += lineHeight
-        canvas.drawText("Pembimbing Akademik: ${mahasiswa.dosen_pa.nama}", margin.toFloat(), y, paint)
-
-        y += lineHeight
-
-        val headerHeight = lineHeight + 6f
-        canvas.drawRect(margin.toFloat(), y, pageWidth - margin.toFloat(), y + headerHeight, headerBgPaint)
-
-        drawCenteredText(canvas, "No", columns[0], columns[1], y + lineHeight, headerTextPaint)
-        drawCenteredText(canvas, "Surah", columns[1], columns[2], y + lineHeight, headerTextPaint)
-        drawCenteredText(canvas, "Tanggal Muroja’ah", columns[2], columns[3], y + lineHeight, headerTextPaint)
-        drawCenteredText(canvas, "Persyaratan", columns[3], columns[4], y + lineHeight, headerTextPaint)
-        drawCenteredText(canvas, "Dosen", columns[4], pageWidth - margin.toFloat(), y + lineHeight, headerTextPaint)
-
-        columns.forEach { x -> canvas.drawLine(x, y, x, y + headerHeight, linePaint) }
-        canvas.drawLine(pageWidth - margin.toFloat(), y, pageWidth - margin.toFloat(), y + headerHeight, linePaint)
-        canvas.drawLine(margin.toFloat(), y + headerHeight, pageWidth - margin.toFloat(), y + headerHeight, linePaint)
-
-        y += headerHeight
-    }
-
-    var (page, canvas) = startNewPage()
-    drawHeader(canvas)
-
-    daftar.forEachIndexed { index, s ->
-        if (y > pageHeight - margin - lineHeight * 5) {
-            pdfDocument.finishPage(page)
-            val newPage = startNewPage()
-            page = newPage.first
-            canvas = newPage.second
-            drawHeader(canvas)
-        }
-
-        val tglSetor = s.info_setoran?.tgl_setoran ?: "-"
-        val dosen = s.info_setoran?.dosen_yang_mengesahkan?.nama ?: "-"
-        val persyaratan = s.label.ifBlank { "-" }
-
-        val cellHeight = lineHeight + 4f
-
-        canvas.drawLine(margin.toFloat(), y, pageWidth - margin.toFloat(), y, linePaint)
-        columns.forEach { x -> canvas.drawLine(x, y, x, y + cellHeight, linePaint) }
-        canvas.drawLine(pageWidth - margin.toFloat(), y, pageWidth - margin.toFloat(), y + cellHeight, linePaint)
-
-        drawCenteredText(canvas, "${index + 1}", columns[0], columns[1], y + lineHeight, paint)
-        drawCenteredText(canvas, s.nama.take(20), columns[1], columns[2], y + lineHeight, paint)
-        drawCenteredText(canvas, tglSetor.take(20), columns[2], columns[3], y + lineHeight, paint)
-        drawCenteredText(canvas, persyaratan.take(20), columns[3], columns[4], y + lineHeight, paint)
-        drawCenteredText(canvas, dosen.take(25), columns[4], pageWidth - margin.toFloat(), y + lineHeight, paint)
-
-        y += cellHeight
-    }
-
-    val currentDate = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(Date())
-    y = pageHeight - margin - 60f
-    canvas.drawText("Pekanbaru, $currentDate", pageWidth - 240f, y, paint)
+    /* ---------- Data mahasiswa ---------- */
+    y += 80f
+    canvas.drawText("Nama                : ${mahasiswa.name}", tableStartX, y, titlePaint)
     y += lineHeight
-    canvas.drawText("Pembimbing Akademik,", pageWidth - 240f, y, paint)
-    y += lineHeight * 4
-    canvas.drawText(mahasiswa.dosen_pa.nama, pageWidth - 240f, y, boldPaint)
-    canvas.drawText("NIP. ${mahasiswa.dosen_pa.nip}", pageWidth - 240f, y + 16f, paint)
+    canvas.drawText(
+        "NIM                 : ${mahasiswa.preferred_username}",
+        tableStartX,
+        y,
+        titlePaint
+    )
+    y += lineHeight
+    canvas.drawText("Pembimbing Akademik : ${mahasiswa.dosen_pa.nama}", tableStartX, y, titlePaint)
+    y += lineHeight
+
+    /* ---------- Header tabel ---------- */
+    val headerHeight = lineHeight + 6f
+    canvas.drawRect(columns.first(), y, columns.last(), y + headerHeight, headerBgPaint)
+
+    fun centeredText(text: String, left: Float, right: Float, baseline: Float, paint: Paint) {
+        canvas.drawText(text, (left + right) / 2f, baseline, paint)
+    }
+
+    val headers = listOf("No", "Surah", "Tanggal Muroja’ah", "Persyaratan", "Dosen")
+    headers.indices.forEach { i ->
+        centeredText(headers[i], columns[i], columns[i + 1], y + lineHeight, headerTextPaint)
+    }
+
+    columns.forEach { x ->
+        canvas.drawLine(x, y, x, y + headerHeight, linePaint)
+    }
+    canvas.drawLine(columns.first(), y + headerHeight, columns.last(), y + headerHeight, linePaint)
+
+    /* ---------- Baris data ---------- */
+    y += headerHeight
+    daftar.forEachIndexed { idx, s ->
+        val rowHeight = lineHeight + 2f
+        columns.forEach { x ->
+            canvas.drawLine(x, y, x, y + rowHeight, linePaint)
+        }
+        canvas.drawLine(columns.first(), y + rowHeight, columns.last(), y + rowHeight, linePaint)
+
+        val values = listOf(
+            (idx + 1).toString(),
+            s.nama.take(30),
+            s.info_setoran?.tgl_setoran?.take(30) ?: "-",
+            s.label.ifBlank { "-" }.take(30),
+            s.info_setoran?.dosen_yang_mengesahkan?.nama?.take(30) ?: "-"
+        )
+        values.indices.forEach { i ->
+            centeredText(values[i], columns[i], columns[i + 1], y + lineHeight, bodyPaint)
+        }
+        y += rowHeight
+    }
+
+    /* ---------- Tanda tangan ---------- */
+    val currentDate = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(Date())
+    y = pageHeight - marginTop - 100f
+    val ttdX = columns.last() - 200f
+
+    canvas.drawText("Pekanbaru, $currentDate", ttdX, y, titlePaint)
+    y += lineHeight
+    canvas.drawText("Pembimbing Akademik,", ttdX, y, titlePaint)
+    y += lineHeight * 4f
+    canvas.drawText(mahasiswa.dosen_pa.nama, ttdX, y, boldPaint)
+    y += lineHeight
+    canvas.drawText("NIP. ${mahasiswa.dosen_pa.nip}", ttdX, y, titlePaint)
 
     pdfDocument.finishPage(page)
 
-    val fileName = "Kartu_Murojaah_${mahasiswa.name.replace(" ", "_")}_${System.currentTimeMillis()}.pdf"
-    val contentValues = ContentValues().apply {
+    /* ---------- Simpan PDF ---------- */
+    val fileName =
+        "Kartu_Murojaah_${mahasiswa.name.replace(" ", "")}${System.currentTimeMillis()}.pdf"
+    val values = ContentValues().apply {
         put(MediaStore.Downloads.DISPLAY_NAME, fileName)
         put(MediaStore.Downloads.MIME_TYPE, "application/pdf")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -272,26 +295,25 @@ fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserI
             put(MediaStore.Downloads.IS_PENDING, 1)
         }
     }
-
     val resolver = context.contentResolver
-    val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-
-    uri?.let {
+    resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)?.let { uri ->
         try {
-            resolver.openOutputStream(uri)?.use { out ->
-                pdfDocument.writeTo(out)
-                Toast.makeText(context, "PDF berhasil disimpan di folder Download.", Toast.LENGTH_LONG).show()
+            resolver.openOutputStream(uri)?.use { outputStream ->
+                pdfDocument.writeTo(outputStream)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                contentValues.clear()
-                contentValues.put(MediaStore.Downloads.IS_PENDING, 0)
-                resolver.update(uri, contentValues, null, null)
+                values.clear()
+                values.put(MediaStore.Downloads.IS_PENDING, 0)
+                resolver.update(uri, values, null, null)
             }
+            Toast.makeText(context, "Berhasil simpan PDF di folder Download", Toast.LENGTH_SHORT)
+                .show()
         } catch (e: IOException) {
-            Toast.makeText(context, "Gagal menyimpan PDF: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Gagal simpan PDF: ${e.message}", Toast.LENGTH_LONG).show()
         }
+    } ?: run {
+        Toast.makeText(context, "Gagal membuat file PDF", Toast.LENGTH_LONG).show()
     }
 
     pdfDocument.close()
 }
-
