@@ -148,10 +148,7 @@ fun StatistikPieChart(daftar: List<Setoran>) {
     val warnaSudahSetor = Color(0xFF4CAF50)
     val warnaBelumSetor = Color(0xFFF44336)
 
-    // Hitung proporsi sudut buat animasi
     val targetSweepAngles = values.map { (it / totalValues) * 360f }
-
-    // Animasi sweep angles masing-masing segmen
     val animatedSweepAngles = targetSweepAngles.map { target ->
         animateFloatAsState(
             targetValue = target,

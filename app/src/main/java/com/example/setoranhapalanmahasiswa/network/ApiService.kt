@@ -27,9 +27,6 @@ private fun JsonElement?.doubleOrZero(): Double =
 private fun JsonElement?.boolOrFalse(): Boolean =
     if (this is JsonPrimitive) this.booleanOrNull ?: false else false
 
-/**
- * Fungsi untuk mengambil data setoran mahasiswa dari API
- */
 suspend fun getSetoranListFromApi(token: String): List<Setoran> = withContext(Dispatchers.IO) {
     try {
         val response: HttpResponse = ApiClient.client.get(
@@ -90,9 +87,6 @@ suspend fun getSetoranListFromApi(token: String): List<Setoran> = withContext(Di
     }
 }
 
-/**
- * Fungsi untuk mengambil data profil mahasiswa dari API Keycloak dan melengkapi dari API Setoran
- */
 suspend fun getUserProfileFromApi(token: String): UserInfo? = withContext(Dispatchers.IO) {
     try {
         val userResponse: HttpResponse = ApiClient.client.get(
@@ -152,9 +146,6 @@ suspend fun getUserProfileFromApi(token: String): UserInfo? = withContext(Dispat
     }
 }
 
-/**
- * Fungsi untuk mengambil ringkasan setoran mahasiswa dari API
- */
 suspend fun getRingkasanSetoranFromApi(token: String): List<RingkasanSetoran> = withContext(Dispatchers.IO) {
     try {
         Log.d("API Ringkasan", "Mulai ambil ringkasan setoran...")

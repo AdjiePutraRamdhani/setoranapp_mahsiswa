@@ -75,9 +75,6 @@ class AuthViewModel @Inject constructor(
     private val _ringkasanSetoran = MutableStateFlow<List<RingkasanSetoran>>(emptyList())
     val ringkasanSetoran: StateFlow<List<RingkasanSetoran>> = _ringkasanSetoran
 
-
-
-
     init {
         viewModelScope.launch {
             dataStoreManager.token.collect { savedToken ->
