@@ -3,6 +3,58 @@ package com.example.setoranhapalanmahasiswa.model
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class ApiResponse(
+    val response: Boolean,
+    val message: String,
+    val data: DataContent
+)
+
+@Serializable
+data class DataContent(
+    val info: UserInfo,
+    val setoran: SetoranWrapper
+)
+
+@Serializable
+data class SetoranWrapper(
+    val log: List<LogItem>,
+    val info_dasar: InfoDasar,
+    val ringkasan: List<RingkasanSetoran>,
+    val detail: List<Setoran>
+)
+
+@Serializable
+data class LogItem(
+    val id: Int,
+    val keterangan: String,
+    val aksi: String,
+    val ip: String,
+    val user_agent: String,
+    val timestamp: String,
+    val nim: String,
+    val dosen_yang_mengesahkan: DosenPA
+)
+
+@Serializable
+data class InfoDasar(
+    val total_wajib_setor: Int,
+    val total_sudah_setor: Int,
+    val total_belum_setor: Int,
+    val persentase_progres_setor: Double,
+    val tgl_terakhir_setor: String,
+    val terakhir_setor: String
+)
+
+@Serializable
+data class RingkasanSetoran(
+    val label: String,
+    val total_wajib_setor: Int,
+    val total_sudah_setor: Int,
+    val total_belum_setor: Int,
+    val persentase_progres_setor: Double
+)
+
+@Serializable
 data class Setoran(
     val id: String,
     val nama: String,
@@ -22,15 +74,7 @@ data class InfoSetoran(
 
 @Serializable
 data class Dosen(
-    val nip: String? = null,
-    val nama: String? = null,
-    val email: String? = null
-)
-
-@Serializable
-data class RingkasanSetoran(
-    val total_wajib_setor: Int = 0,
-    val total_sudah_setor: Int = 0,
-    val total_belum_setor: Int = 0,
-    val persentase_progres_setor: Int = 0
+    val nip: String,
+    val nama: String,
+    val email: String
 )

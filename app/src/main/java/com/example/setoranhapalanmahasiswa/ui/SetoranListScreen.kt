@@ -217,10 +217,10 @@ fun exportSetoranToPdf(context: Context, daftar: List<Setoran>, mahasiswa: UserI
 
     /* ---------- Data mahasiswa ---------- */
     y += 80f
-    canvas.drawText("Nama                : ${mahasiswa.name}", tableStartX, y, titlePaint)
+    canvas.drawText("Nama: ${mahasiswa.name}", tableStartX, y, titlePaint)
     y += lineHeight
     canvas.drawText(
-        "NIM                 : ${mahasiswa.preferred_username}",
+        "NIM   : ${mahasiswa.preferred_username}",
         tableStartX,
         y,
         titlePaint

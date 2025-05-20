@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.setoranhapalanmahasiswa.datastore.DataStoreManager
 import com.example.setoranhapalanmahasiswa.model.LoginResponse
+import com.example.setoranhapalanmahasiswa.model.RingkasanSetoran
 import com.example.setoranhapalanmahasiswa.model.Setoran
 import com.example.setoranhapalanmahasiswa.model.UserInfo
 import com.example.setoranhapalanmahasiswa.network.ApiClient
 import com.example.setoranhapalanmahasiswa.network.getSetoranListFromApi
 import com.example.setoranhapalanmahasiswa.network.getUserProfileFromApi
+import com.example.setoranhapalanmahasiswa.network.getRingkasanSetoranFromApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.headers
@@ -70,6 +72,12 @@ class AuthViewModel @Inject constructor(
     private val _userInfo = MutableStateFlow<UserInfo?>(null)
     val userInfo: StateFlow<UserInfo?> = _userInfo
 
+    private val _ringkasanSetoran = MutableStateFlow<List<RingkasanSetoran>>(emptyList())
+    val ringkasanSetoran: StateFlow<List<RingkasanSetoran>> = _ringkasanSetoran
+
+
+
+
     init {
         viewModelScope.launch {
             dataStoreManager.token.collect { savedToken ->
@@ -78,6 +86,7 @@ class AuthViewModel @Inject constructor(
                     try {
                         fetchUserInfo(token)
                         fetchSetoranList()
+                        fetchRingkasanSetoran()
                     } catch (e: Exception) {
                         Log.e("AuthViewModel", "Error during initialization: ${e.message}")
                         _error.value = "Gagal memuat data: ${e.message}"
@@ -158,17 +167,19 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    suspend fun fetchSetoranList() {
-        updateStatus(LoadingStatus.LOADING)
-        try {
-            val setoranData = getSetoranListFromApi(token)
-            if (setoranData.isNullOrEmpty()) throw Exception("Data setoran tidak tersedia.")
-            _setoranList.value = setoranData
-            updateStatus(LoadingStatus.SUCCESS)
-            Log.d("AuthViewModel", "Berhasil mengambil ${setoranData.size} data setoran")
-        } catch (e: Exception) {
-            _error.value = "Gagal mengambil daftar setoran: ${e.message}"
-            updateStatus(LoadingStatus.ERROR)
+    fun fetchSetoranList() {
+        viewModelScope.launch {
+            updateStatus(LoadingStatus.LOADING)
+            try {
+                val setoranData = getSetoranListFromApi(token)
+                if (setoranData.isNullOrEmpty()) throw Exception("Data setoran tidak tersedia.")
+                _setoranList.value = setoranData
+                updateStatus(LoadingStatus.SUCCESS)
+                Log.d("AuthViewModel", "Berhasil mengambil ${setoranData.size} data setoran")
+            } catch (e: Exception) {
+                _error.value = "Gagal mengambil daftar setoran: ${e.message}"
+                updateStatus(LoadingStatus.ERROR)
+            }
         }
     }
 
@@ -200,4 +211,25 @@ class AuthViewModel @Inject constructor(
     private fun updateStatus(newStatus: LoadingStatus) {
         _status.value = newStatus
     }
+
+    fun fetchRingkasanSetoran() {
+        viewModelScope.launch {
+            updateStatus(LoadingStatus.LOADING)
+            try {
+                val ringkasan = getRingkasanSetoranFromApi(token)
+                if (ringkasan == null) {
+                    _error.value = "Ringkasan tidak ditemukan."
+                    updateStatus(LoadingStatus.ERROR)
+                    return@launch
+                }
+
+                _ringkasanSetoran.value = ringkasan
+                updateStatus(LoadingStatus.SUCCESS)
+            } catch (e: Exception) {
+                _error.value = "Gagal mengambil ringkasan: ${e.message}"
+                updateStatus(LoadingStatus.ERROR)
+            }
+        }
+    }
+
 }
