@@ -15,6 +15,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.example.setoranhapalanmahasiswa.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,27 +40,46 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
                             Spacer(modifier = Modifier.height(12.dp))
                         }
 
-                        Text(
-                            text = when (currentScreen) {
-                                "home" -> "Dashboard"
-                                "profile" -> "Profil Saya"
-                                "statistik" -> "Statistik Setoran"
-                                else -> ""
-                            },
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-
                         if (currentScreen == "home") {
+                            // Tampilkan logo dan teks "Dashboard"
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logouinsuskariau), // ganti sesuai nama file di drawable
+                                    contentDescription = "Logo UIN",
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .padding(end = 8.dp)
+                                )
+                                Text(
+                                    text = "Dashboard",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = if (nama.isNotEmpty()) "Selamat datang, $nama" else "Memuat data...",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp)
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(start = 15.dp)
+                            )
+                        } else {
+                            Text(
+                                text = when (currentScreen) {
+                                    "profile" -> "Profil Saya"
+                                    "statistik" -> "Statistik Setoran"
+                                    else -> ""
+                                },
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
                             )
                         }
                     }
                 }
+
             )
         },
         bottomBar = {

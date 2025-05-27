@@ -20,9 +20,25 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.example.setoranhapalanmahasiswa.R
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+
+
+
 
 @Composable
 fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
+    val customFont = FontFamily(
+        Font(R.font.scheherazade_new_medium, weight = FontWeight.Medium)
+    )
+
     var nim by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -32,130 +48,153 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
     ) {
-        ElevatedCard(
+        // 🔹 Gambar latar belakang
+        Image(
+            painter = painterResource(id = R.drawable.latarbelakang), // ganti dengan nama file gambar kamu
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // 🔹 Overlay gelap agar teks tetap jelas
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6f))
+        )
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(16.dp),
-            shape = MaterialTheme.shapes.medium,
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+            contentAlignment = Alignment.Center
         ) {
-            Column(
+            ElevatedCard(
                 modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "User Icon",
+                Column(
                     modifier = Modifier
-                        .size(64.dp)
-                        .padding(bottom = 8.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logouinsuskariau),
+                        contentDescription = "Logo UIN Suska Riau",
+                        modifier = Modifier
+                            .size(96.dp)
+                            .padding(bottom = 16.dp)
+                    )
 
-                Text(
-                    text = "Selamat Datang",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontSize = 22.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
 
-                Text(
-                    text = "Silakan masuk di sini.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
+                    Text(
+                        text = "السّلام عليكم",
+                        fontSize = 26.sp,
+                        fontFamily = customFont,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
 
-                OutlinedTextField(
-                    value = nim,
-                    onValueChange = { nim = it },
-                    label = { Text("NIM") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Silakan masuk di sini.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
 
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
-                            )
-                        }
-                    }
-                )
+                    OutlinedTextField(
+                        value = nim,
+                        onValueChange = { nim = it },
+                        label = { Text("NIM") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                Button(
-                    onClick = {
-                        scope.launch {
-                            try {
-                                // Validasi input
-                                if (nim.isBlank()) {
-                                    errorMessage = "NIM tidak boleh kosong"
-                                    return@launch
-                                }
-                                if (!nim.matches(Regex("^[0-9]+$"))) {
-                                    errorMessage = "Format NIM tidak valid"
-                                    return@launch
-                                }
-                                if (password.isBlank()) {
-                                    errorMessage = "Password tidak boleh kosong"
-                                    return@launch
-                                }
-
-                                // Login
-                                vm.login(nim)
-
-                                // Cek status login
-                                if (vm.token.isNotEmpty()) {
-                                    errorMessage = ""
-                                    nav.navigate("dashboard") {
-                                        popUpTo("login") { inclusive = true }
-                                    }
-                                } else {
-                                    errorMessage = "Login gagal: Token tidak ditemukan"
-                                }
-                            } catch (e: Exception) {
-                                errorMessage = "Login gagal: ${e.message}"
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
+                                )
                             }
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Text("Login")
-                }
-
-                if (errorMessage.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                try {
+                                    // Validasi input
+                                    if (nim.isBlank()) {
+                                        errorMessage = "NIM tidak boleh kosong"
+                                        return@launch
+                                    }
+                                    if (!nim.matches(Regex("^[0-9]+$"))) {
+                                        errorMessage = "Format NIM tidak valid"
+                                        return@launch
+                                    }
+                                    if (password.isBlank()) {
+                                        errorMessage = "Password tidak boleh kosong"
+                                        return@launch
+                                    }
+
+                                    // Login
+                                    vm.login(nim)
+
+                                    // Cek status login
+                                    if (vm.token.isNotEmpty()) {
+                                        errorMessage = ""
+                                        nav.navigate("dashboard") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    } else {
+                                        errorMessage = "Login gagal: Token tidak ditemukan"
+                                    }
+                                } catch (e: Exception) {
+                                    errorMessage = "Login gagal: ${e.message}"
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Login")
+                    }
+
+                    if (errorMessage.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         }
     }
 }
-
