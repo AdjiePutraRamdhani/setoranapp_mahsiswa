@@ -41,7 +41,10 @@ fun SetoranHafalanApp() {
             composable("setoran_verifikasi/{setoranId}") { backStackEntry ->
                 val setoranId = backStackEntry.arguments?.getString("setoranId")
                 if (setoranId != null) {
-                    SetoranDetailScreen(setoranId, navController)
+                    SetoranDetailDialog(
+                        setoranId = setoranId,
+                        onDismiss = { navController.popBackStack() }
+                    )
                 } else {
                     Text("Data setoran tidak ditemukan")
                 }
