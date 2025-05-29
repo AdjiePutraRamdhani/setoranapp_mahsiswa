@@ -19,12 +19,10 @@ fun SetoranDetailDialog(
     onDismiss: () -> Unit,
     vm: AuthViewModel = hiltViewModel()
 ) {
-    /* ---------- state ---------- */
     val daftar by vm.setoranList.collectAsState()
     val status by vm.status.collectAsState()
     val error by vm.error.collectAsState()
 
-    /* ---------- fetch sekali ---------- */
     LaunchedEffect(Unit) { if (daftar.isEmpty()) vm.fetchSetoranList() }
 
     AlertDialog(
