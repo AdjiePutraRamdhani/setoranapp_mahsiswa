@@ -214,7 +214,6 @@ suspend fun downloadKartuMurojaah(token: String, destinationFile: File): Boolean
             return@withContext false
         }
 
-        // Tulis file PDF ke penyimpanan lokal
         response.bodyAsChannel().copyTo(destinationFile.outputStream())
         Log.d("DownloadKartu", "Berhasil simpan ke ${destinationFile.absolutePath}")
         return@withContext true

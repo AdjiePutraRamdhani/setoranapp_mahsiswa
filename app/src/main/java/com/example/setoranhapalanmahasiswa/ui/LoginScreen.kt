@@ -24,7 +24,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.example.setoranhapalanmahasiswa.R
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -55,7 +54,6 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        // 🔹 Gambar latar belakang
         Image(
             painter = painterResource(id = R.drawable.latarbelakang), // ganti dengan nama file gambar kamu
             contentDescription = null,
@@ -63,7 +61,6 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
             contentScale = ContentScale.Crop
         )
 
-        // 🔹 Overlay gelap agar teks tetap jelas
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -150,7 +147,6 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                         onClick = {
                             scope.launch {
                                 try {
-                                    // Validasi input
                                     if (nim.isBlank()) {
                                         errorMessage = "NIM tidak boleh kosong"
                                         return@launch
@@ -164,15 +160,12 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                                         return@launch
                                     }
 
-                                    // Login
                                     vm.login(nim)
 
-                                    // Cek status login
                                     if (vm.token.isNotEmpty()) {
                                         errorMessage = ""
                                         isLoading = true
 
-                                        // delay sebelum pindah ke dashboard
                                         kotlinx.coroutines.delay(2000)
                                         isLoading = false
 
