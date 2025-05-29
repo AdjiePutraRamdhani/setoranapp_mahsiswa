@@ -1,5 +1,6 @@
 package com.example.setoranhapalanmahasiswa.ui
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,16 +11,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.setoranhapalanmahasiswa.model.Setoran
+import com.example.setoranhapalanmahasiswa.network.downloadKartuMurojaah
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import com.example.setoranhapalanmahasiswa.viewmodel.LoadingStatus
 import com.example.setoranhapalanmahasiswa.util.exportSetoranToPdf
+import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun SetoranListScreen(
@@ -31,6 +37,7 @@ fun SetoranListScreen(
     val errorMessage by vm.error.collectAsState()
     val userInfo by vm.userInfo.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -49,13 +56,27 @@ fun SetoranListScreen(
 
             IconButton(
                 onClick = {
-                    userInfo?.let {
-                        exportSetoranToPdf(context, daftar, it)
-                    } ?: Toast.makeText(context,
-                        "Data pengguna belum tersedia",
-                        Toast.LENGTH_SHORT).show()
-                }
-            ) {
+                    scope.launch {
+                        val file = File(context.cacheDir, "kartu_murojaah.pdf")
+                        val token = vm.token
+                        val berhasil = downloadKartuMurojaah(token, file)
+
+                        if (berhasil) {
+                            val uri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.provider",
+                                file
+                            )
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                setDataAndType(uri, "application/pdf")
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(intent)
+                        } else {
+                            Toast.makeText(context, "Gagal mendownload kartu", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }) {
                 Icon(
                     imageVector = Icons.Default.Download,
                     contentDescription = "Download Rekap",

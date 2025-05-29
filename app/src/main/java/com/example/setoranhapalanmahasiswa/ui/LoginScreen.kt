@@ -39,11 +39,17 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
         Font(R.font.scheherazade_new_medium, weight = FontWeight.Medium)
     )
 
+    var isLoading by remember { mutableStateOf(false) }
     var nim by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+
+    if (isLoading) {
+        LoadingScreen()
+        return
+    }
 
     Box(
         modifier = Modifier
@@ -164,6 +170,12 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                                     // Cek status login
                                     if (vm.token.isNotEmpty()) {
                                         errorMessage = ""
+                                        isLoading = true
+
+                                        // delay sebelum pindah ke dashboard
+                                        kotlinx.coroutines.delay(2000)
+                                        isLoading = false
+
                                         nav.navigate("dashboard") {
                                             popUpTo("login") { inclusive = true }
                                         }

@@ -6,11 +6,14 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
+import java.io.File
 
 /**
  * Helper extension function untuk parsing JsonElement dengan aman.
@@ -196,4 +199,29 @@ suspend fun getRingkasanSetoranFromApi(token: String): List<RingkasanSetoran> = 
     }
 }
 
+suspend fun downloadKartuMurojaah(token: String, destinationFile: File): Boolean = withContext(Dispatchers.IO) {
+    try {
+        val response: HttpResponse = ApiClient.client.get(
+            "https://api.tif.uin-suska.ac.id/setoran-dev/v1/mahasiswa/kartu-murojaah-saya"
+        ) {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer $token")
+            }
+        }
 
+        if (response.status.value != 200) {
+            Log.e("DownloadKartu", "Gagal: ${response.status}")
+            return@withContext false
+        }
+
+        // Tulis file PDF ke penyimpanan lokal
+        response.bodyAsChannel().copyTo(destinationFile.outputStream())
+        Log.d("DownloadKartu", "Berhasil simpan ke ${destinationFile.absolutePath}")
+        return@withContext true
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Log.e("DownloadKartu", "Error: ${e.message}")
+        return@withContext false
+    }
+}
