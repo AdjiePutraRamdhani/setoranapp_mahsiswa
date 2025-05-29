@@ -33,6 +33,7 @@ fun SetoranHafalanApp() {
     SetoranHapalanmahasiswaTheme {
         NavHost(navController = navController, startDestination = "login") {
             composable("login") { LoginScreen(navController) }
+           // composable("login") { LoadingScreen(navController) }
             composable("dashboard") { DashboardScreen(navController) }
             composable("profile") { ProfileScreen(navController) }
             composable("setoran_list") { SetoranListScreen(navController) }
