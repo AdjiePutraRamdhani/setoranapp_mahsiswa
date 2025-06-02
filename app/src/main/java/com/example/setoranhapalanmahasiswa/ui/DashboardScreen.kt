@@ -59,13 +59,6 @@ fun DashboardScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel())
                                     fontWeight = FontWeight.Bold,
                                 )
                             }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = if (nama.isNotEmpty()) "Selamat datang, $nama" else "Memuat data...",
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(start = 15.dp)
-                            )
                         } else {
                             Text(
                                 text = when (currentScreen) {
