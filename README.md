@@ -1,6 +1,6 @@
-# 📖 SetoranApp Mahasiswa
+# 📚 SetoranApp Mahasiswa
 
-Aplikasi Android yang membantu mahasiswa dalam memantau progres setoran Al-Qur'an secara digital. Dibangun menggunakan **Kotlin**, **Jetpack Compose**, dan terintegrasi dengan REST API kampus.
+Aplikasi Android yang membantu mahasiswa dalam memantau progres setoran hapalan Al-Qur'an secara digital.
 
 ---
 
