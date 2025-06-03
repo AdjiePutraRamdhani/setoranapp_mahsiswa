@@ -93,15 +93,15 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun login(nim: String) {
+    fun login(nim: String, password: String ) {
         viewModelScope.launch {
-            if (nim.isBlank()) {
+            if (password.isBlank()) {
                 _error.value = "NIM tidak boleh kosong"
                 return@launch
             }
             updateStatus(LoadingStatus.LOADING)
             try {
-                val newToken = loginMahasiswa(nim)
+                val newToken = loginMahasiswa(nim, password)
                 token = newToken
                 _error.value = ""
                 updateStatus(LoadingStatus.SUCCESS)
@@ -114,7 +114,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loginMahasiswa(nim: String): String {
+    private suspend fun loginMahasiswa(nim: String, password: String): String {
         val response = ApiClient.client.submitForm(
             url = "https://id.tif.uin-suska.ac.id/realms/dev/protocol/openid-connect/token",
             formParameters = Parameters.build {
@@ -122,7 +122,7 @@ class AuthViewModel @Inject constructor(
                 append("client_id", "setoran-mobile-dev")
                 append("client_secret", "aqJp3xnXKudgC7RMOshEQP7ZoVKWzoSl")
                 append("username", nim)
-                append("password", nim)
+                append("password", password)
                 append("scope", "openid profile email")
             }
         ) {

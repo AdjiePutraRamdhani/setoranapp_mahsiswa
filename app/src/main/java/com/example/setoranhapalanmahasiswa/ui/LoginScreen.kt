@@ -151,16 +151,16 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                                         errorMessage = "NIM tidak boleh kosong"
                                         return@launch
                                     }
-                                    if (!nim.matches(Regex("^[0-9]+$"))) {
+                                    /*if (!nim.matches(Regex("^[0-9]+$"))) {
                                         errorMessage = "Format NIM tidak valid"
                                         return@launch
-                                    }
+                                    }*/
                                     if (password.isBlank()) {
                                         errorMessage = "Password tidak boleh kosong"
                                         return@launch
                                     }
 
-                                    vm.login(nim)
+                                    vm.login(nim, password)
 
                                     if (vm.token.isNotEmpty()) {
                                         errorMessage = ""
