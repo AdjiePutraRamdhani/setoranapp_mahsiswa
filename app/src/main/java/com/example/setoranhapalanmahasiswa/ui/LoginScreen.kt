@@ -1,5 +1,6 @@
 package com.example.setoranhapalanmahasiswa.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,9 +29,8 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-
-
-
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Color // Import untuk Color.White
 
 @Composable
 fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
@@ -55,7 +55,7 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
             .fillMaxSize()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.latarbelakang), // ganti dengan nama file gambar kamu
+            painter = painterResource(id = R.drawable.latar2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -77,9 +77,20 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .border(
+                        BorderStroke(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = MaterialTheme.shapes.medium
+                    ),
                 shape = MaterialTheme.shapes.medium,
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+                // --- Tambahkan atau ubah containerColor di sini ---
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = Color.White // Mengubah warna latar belakang card menjadi putih
+                )
             ) {
                 Column(
                     modifier = Modifier
