@@ -3,10 +3,12 @@ package com.example.setoranhapalanmahasiswa.ui
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
@@ -15,12 +17,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.setoranhapalanmahasiswa.R
 import com.example.setoranhapalanmahasiswa.model.Setoran
 import com.example.setoranhapalanmahasiswa.network.downloadKartuMurojaah
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
@@ -61,16 +69,24 @@ fun SetoranListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "Detail Riwayat Muroja'ah",
-                style = MaterialTheme.typography.titleLarge
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.detailmurojaah),
+                    contentDescription = "Riwayat Muroja'ah Icon",
+                    modifier = Modifier
+                        .size(35.dp)
+                        .padding(end = 8.dp)
+                )
+                Text(
+                    text = "Detail Riwayat Muroja'ah",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
 
             IconButton(
                 onClick = {
@@ -96,61 +112,84 @@ fun SetoranListScreen(
                     }
                 }
             ) {
-                Icon(
-                    imageVector = Icons.Default.Download,
+                Image(
+                    painter = painterResource(id = R.drawable.unduh),
                     contentDescription = "Download Rekap",
-                    tint = MaterialTheme.colorScheme.primary
+                    modifier = Modifier.size(30.dp)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Search + Filter di 1 baris
+        // ⭐ AWAL PERUBAHAN UTAMA: Membungkus Search Bar dan Dropdown dalam satu Row
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically // Pastikan mereka sejajar secara vertikal
         ) {
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = {
-                    Text(
-                        text = "Cari surah...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Cari",
-                        tint = Color.Gray
-                    )
-                },
-                singleLine = true,
-                shape = MaterialTheme.shapes.large,
+            // Box (Search Bar) dengan modifier weight(1f)
+            Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(56.dp)
-                    .padding(end = 8.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    .weight(1f) // ⭐ Berikan weight agar mengambil sisa ruang
+                    .height(56.dp) // Tinggi sama dengan TextField
+                    .background(
+                        brush = Brush.horizontalGradient( // Menggunakan gradien horizontal
+                            colors = listOf(
+                                Color.Red,
+                                Color.Yellow,
+                                Color.Green,
+                                Color.Blue,
+                                Color.Magenta
+                            )
+                        ),
+                        shape = MaterialTheme.shapes.large
+                    )
+                    .padding(2.dp)
+                    .shadow(elevation = 4.dp, shape = MaterialTheme.shapes.large)
+            ) {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = {
+                        Text(
+                            text = "Cari surah...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Cari",
+                            tint = Color.Gray
+                        )
+                    },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier.fillMaxSize(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp)) // ⭐ Spasi antara Search Bar dan Dropdown
+
+            // DropdownMenuBox
             DropdownMenuBox(
                 selected = selectedFilter,
                 onSelectedChange = { selectedFilter = it },
                 options = listOf("Semua", "Sudah", "Belum")
             )
         }
+        // ⭐ AKHIR PERUBAHAN UTAMA
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -182,10 +221,11 @@ fun SetoranListScreen(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
+                                    .padding(vertical = 6.dp)
+                                    .shadow(6.dp, shape = MaterialTheme.shapes.medium),
                                 shape = MaterialTheme.shapes.medium,
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    containerColor = Color(0xFFBBDEFB)
                                 )
                             ) {
                                 Box(
@@ -267,7 +307,8 @@ fun DropdownMenuBox(
             selected = true,
             onClick = { expanded = true },
             label = { Text(selected) },
-            modifier = Modifier.height(56.dp)
+            // ⭐ Penting: Sesuaikan tinggi FilterChip agar sejajar dengan TextField
+            modifier = Modifier.height(56.dp) // Pastikan tingginya sama dengan TextField
         )
         DropdownMenu(
             expanded = expanded,

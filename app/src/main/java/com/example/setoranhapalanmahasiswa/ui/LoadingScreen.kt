@@ -15,6 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.*
 import com.example.setoranhapalanmahasiswa.R
+import androidx.compose.foundation.Image // <-- Import ini untuk Image
+import androidx.compose.ui.res.painterResource // <-- Import ini untuk painterResource
+import androidx.compose.ui.layout.ContentScale // <-- Import ini untuk ContentScale
+import androidx.compose.ui.graphics.Color // <-- Import ini untuk Color jika pakai overlay warna
 
 @Composable
 fun LoadingScreen() {
@@ -35,47 +39,63 @@ fun LoadingScreen() {
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        // --- MULAI PENAMBAHAN GAMBAR BACKGROUND ---
+        Image(
+            painter = painterResource(id = R.drawable.sabarimage), // <--- GANTI DENGAN NAMA FILE GAMBAR ANDA DI res/drawable
+            contentDescription = "Background Loading Screen", // Tambahkan deskripsi yang relevan
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop // Memotong gambar agar mengisi seluruh area
+        )
+
+        // Opsional: Tambahkan overlay untuk membuat teks dan animasi lebih mudah dibaca
+        // Ini akan membuat gambar background sedikit lebih redup
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f)) // Overlay hitam transparan
+            // Anda juga bisa mencoba overlay dengan warna MaterialTheme Anda:
+            // .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+        )
+        // --- AKHIR PENAMBAHAN GAMBAR BACKGROUND ---
+
+        // Konten utama Loading Screen (Lottie, teks, dll.)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
         ) {
-            LottieAnimation(
-                composition = composition,
-                progress = { progress },
-                modifier = Modifier.size(180.dp)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(180.dp)
+                )
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "Mohon tunggu sebentar \uD83D\uDE4F",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+                Text(
+                    text = "Mohon tunggu sebentar \uD83D\uDE4F",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White // Ubah warna teks agar kontras dengan background gelap
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Memuat data hafalan...",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                modifier = Modifier.alpha(animatedAlpha)
-            )
+                Text(
+                    text = "Memuat data hafalan...",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    color = Color.White.copy(alpha = 0.7f), // Ubah warna teks agar kontras
+                    modifier = Modifier.alpha(animatedAlpha)
+                )
+            }
         }
     }
 }
