@@ -229,4 +229,18 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    //SwipeRefresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
+    fun refreshSetoranList() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            fetchSetoranList()
+            fetchRingkasanSetoran()
+            _isRefreshing.value = false
+        }
+    }
+
+
 }

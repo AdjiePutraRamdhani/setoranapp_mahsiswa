@@ -96,7 +96,12 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:<version>")
     implementation("androidx.compose.material3:material3")
 
+    // SwipeRefresh
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.33.2-alpha")
 
+
+    implementation(platform("androidx.compose:compose-bom:2024.05.00"))
+    implementation("com.airbnb.android:lottie-compose")
 
 
 

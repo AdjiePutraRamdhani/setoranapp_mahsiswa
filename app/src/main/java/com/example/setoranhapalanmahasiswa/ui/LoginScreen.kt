@@ -177,7 +177,7 @@ fun LoginScreen(nav: NavHostController, vm: AuthViewModel = hiltViewModel()) {
                                         errorMessage = ""
                                         isLoading = true
 
-                                        kotlinx.coroutines.delay(2000)
+                                        kotlinx.coroutines.delay(3000)
                                         isLoading = false
 
                                         nav.navigate("dashboard") {
