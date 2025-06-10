@@ -19,7 +19,7 @@ Aplikasi Android yang membantu mahasiswa dalam memantau progres setoran hapalan 
 - **Kotlin**
 - **Jetpack Compose**
 - **Hilt (Dependency Injection)**
-- **Retrofit (Networking)**
+- **Ktor Client (Networking)**
 - **DataStore (Local Preferences)**
 - **ViewModel + State Management**
 - **Kotlin Coroutines & Flow**
