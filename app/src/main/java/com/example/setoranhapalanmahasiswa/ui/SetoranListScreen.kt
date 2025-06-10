@@ -3,12 +3,10 @@ package com.example.setoranhapalanmahasiswa.ui
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
@@ -17,22 +15,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.setoranhapalanmahasiswa.R
 import com.example.setoranhapalanmahasiswa.model.Setoran
 import com.example.setoranhapalanmahasiswa.network.downloadKartuMurojaah
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
 import com.example.setoranhapalanmahasiswa.viewmodel.LoadingStatus
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -47,6 +41,7 @@ fun SetoranListScreen(
     val errorMessage by vm.error.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val isRefreshing by vm.isRefreshing.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Semua") }
@@ -69,24 +64,16 @@ fun SetoranListScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.detailmurojaah),
-                    contentDescription = "Riwayat Muroja'ah Icon",
-                    modifier = Modifier
-                        .size(35.dp)
-                        .padding(end = 8.dp)
-                )
-                Text(
-                    text = "Detail Riwayat Muroja'ah",
-                    style = MaterialTheme.typography.titleLarge,
-                )
-            }
+            Text(
+                text = "Detail Riwayat Muroja'ah",
+                style = MaterialTheme.typography.titleLarge
+            )
 
             IconButton(
                 onClick = {
@@ -107,89 +94,67 @@ fun SetoranListScreen(
                             }
                             context.startActivity(intent)
                         } else {
-                            Toast.makeText(context, "Gagal mendownload kartu", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Gagal mendownload kartu", Toast.LENGTH_SHORT)
+                                .show()
                         }
                     }
                 }
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.unduh),
+                Icon(
+                    imageVector = Icons.Default.Download,
                     contentDescription = "Download Rekap",
-                    modifier = Modifier.size(30.dp)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ⭐ AWAL PERUBAHAN UTAMA: Membungkus Search Bar dan Dropdown dalam satu Row
+        // Search + Filter di 1 baris
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically // Pastikan mereka sejajar secara vertikal
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Box (Search Bar) dengan modifier weight(1f)
-            Box(
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = {
+                    Text(
+                        text = "Cari surah...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Cari",
+                        tint = Color.Gray
+                    )
+                },
+                singleLine = true,
+                shape = MaterialTheme.shapes.large,
                 modifier = Modifier
-                    .weight(1f) // ⭐ Berikan weight agar mengambil sisa ruang
-                    .height(56.dp) // Tinggi sama dengan TextField
-                    .background(
-                        brush = Brush.horizontalGradient( // Menggunakan gradien horizontal
-                            colors = listOf(
-                                Color.Red,
-                                Color.Yellow,
-                                Color.Green,
-                                Color.Blue,
-                                Color.Magenta
-                            )
-                        ),
-                        shape = MaterialTheme.shapes.large
-                    )
-                    .padding(2.dp)
-                    .shadow(elevation = 4.dp, shape = MaterialTheme.shapes.large)
-            ) {
-                TextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            text = "Cari surah...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Cari",
-                            tint = Color.Gray
-                        )
-                    },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxSize(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    .weight(1f)
+                    .height(56.dp)
+                    .padding(end = 8.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp)) // ⭐ Spasi antara Search Bar dan Dropdown
-
-            // DropdownMenuBox
+            )
             DropdownMenuBox(
                 selected = selectedFilter,
                 onSelectedChange = { selectedFilter = it },
                 options = listOf("Semua", "Sudah", "Belum")
             )
         }
-        // ⭐ AKHIR PERUBAHAN UTAMA
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -215,74 +180,78 @@ fun SetoranListScreen(
             }
 
             else -> {
-                LazyColumn {
-                    items(filteredList, key = { it.id }) { setoran ->
-                        AnimatedVisibility(visible = true) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
-                                    .shadow(6.dp, shape = MaterialTheme.shapes.medium),
-                                shape = MaterialTheme.shapes.medium,
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFBBDEFB)
-                                )
-                            ) {
-                                Box(
+                SwipeRefresh(
+                    state = rememberSwipeRefreshState(isRefreshing),
+                    onRefresh = { vm.refreshSetoranList() }
+                ) {
+                    LazyColumn {
+                        items(filteredList, key = { it.id }) { setoran ->
+                            AnimatedVisibility(visible = true) {
+                                Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp)
+                                        .padding(vertical = 6.dp),
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    )
                                 ) {
-                                    Column {
-                                        Text("Surah: ${setoran.nama} (${setoran.nama_arab})")
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Column {
+                                            Text("Surah: ${setoran.nama} (${setoran.nama_arab})")
 
-                                        Spacer(modifier = Modifier.height(4.dp))
+                                            Spacer(modifier = Modifier.height(4.dp))
 
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = "Status: ",
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                            Box(
-                                                modifier = Modifier
-                                                    .padding(start = 4.dp)
-                                                    .background(
-                                                        color = if (setoran.sudah_setor)
-                                                            Color(0xFFB9F6CA)
-                                                        else
-                                                            Color(0xFFFFCDD2),
-                                                        shape = MaterialTheme.shapes.small
-                                                    )
-                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                            ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
-                                                    text = if (setoran.sudah_setor) "Sudah" else "Belum",
-                                                    color = if (setoran.sudah_setor)
-                                                        Color(0xFF2E7D32)
-                                                    else
-                                                        Color(0xFFC62828),
-                                                    style = MaterialTheme.typography.bodySmall
+                                                    text = "Status: ",
+                                                    style = MaterialTheme.typography.bodyMedium
                                                 )
+                                                Box(
+                                                    modifier = Modifier
+                                                        .padding(start = 4.dp)
+                                                        .background(
+                                                            color = if (setoran.sudah_setor)
+                                                                Color(0xFFB9F6CA)
+                                                            else
+                                                                Color(0xFFFFCDD2),
+                                                            shape = MaterialTheme.shapes.small
+                                                        )
+                                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = if (setoran.sudah_setor) "Sudah" else "Belum",
+                                                        color = if (setoran.sudah_setor)
+                                                            Color(0xFF2E7D32)
+                                                        else
+                                                            Color(0xFFC62828),
+                                                        style = MaterialTheme.typography.bodySmall
+                                                    )
+                                                }
                                             }
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text("Label: ${setoran.label}")
                                         }
 
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text("Label: ${setoran.label}")
-                                    }
-
-                                    IconButton(
-                                        onClick = {
-                                            nav.navigate("setoran_verifikasi/${setoran.id}")
-                                        },
-                                        modifier = Modifier
-                                            .align(Alignment.TopEnd)
-                                            .size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Info,
-                                            contentDescription = "Detail",
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
+                                        IconButton(
+                                            onClick = {
+                                                nav.navigate("setoran_verifikasi/${setoran.id}")
+                                            },
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Info,
+                                                contentDescription = "Detail",
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -307,8 +276,7 @@ fun DropdownMenuBox(
             selected = true,
             onClick = { expanded = true },
             label = { Text(selected) },
-            // ⭐ Penting: Sesuaikan tinggi FilterChip agar sejajar dengan TextField
-            modifier = Modifier.height(56.dp) // Pastikan tingginya sama dengan TextField
+            modifier = Modifier.height(56.dp)
         )
         DropdownMenu(
             expanded = expanded,

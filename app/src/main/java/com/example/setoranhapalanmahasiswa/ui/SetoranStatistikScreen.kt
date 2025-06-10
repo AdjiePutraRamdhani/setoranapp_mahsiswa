@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.Image // Import untuk Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.example.setoranhapalanmahasiswa.R // Import R untuk resource gambar
 import com.example.setoranhapalanmahasiswa.model.RingkasanSetoran
 import com.example.setoranhapalanmahasiswa.model.Setoran
 import com.example.setoranhapalanmahasiswa.viewmodel.AuthViewModel
@@ -33,10 +31,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.draw.alpha // Import untuk alpha
-import androidx.compose.ui.layout.ContentScale // Import untuk ContentScale
-import androidx.compose.ui.res.painterResource
-@OptIn(ExperimentalMaterial3Api::class)
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+
 @Composable
 fun SetoranFormScreen(
     nav: NavHostController,
@@ -46,58 +43,26 @@ fun SetoranFormScreen(
     val status by vm.status.collectAsState()
     val errorMessage by vm.error.collectAsState()
     val ringkasan by vm.ringkasanSetoran.collectAsState()
+    val isRefreshing by vm.isRefreshing.collectAsState()
     val colors = MaterialTheme.colorScheme
+
     val totalWajibSetor = ringkasan.sumOf { it.total_wajib_setor }
     val totalSudahSetor = ringkasan.sumOf { it.total_sudah_setor }
 
-    // --- MULAI PERUBAHAN: Background Image dan Overlay ---
-    Box(
-        modifier = Modifier.fillMaxSize()
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing = isRefreshing)
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = colors.background
     ) {
-        // 1. Gambar Background Utama
-        Image(
-            painter = painterResource(id = R.drawable.latar), // Pastikan R.drawable.latar ada
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .alpha(1.0f), // Sesuaikan transparansi gambar background (0.0f - 1.0f)
-            contentScale = ContentScale.Crop
-        )
-
-        // 2. Lapisan Overlay untuk Membuat Konten Lebih Terbaca
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White.copy(alpha = 0.8f)) // Sesuaikan transparansi overlay
-        )
-
-        // --- AKHIR PERUBAHAN BACKGROUND ---
-
-        // Konten utama SetoranFormScreen
-        // Jika Anda ingin TopAppBar, Anda bisa membungkusnya dengan Scaffold di sini:
-        // Scaffold(
-        //     topBar = {
-        //         TopAppBar(
-        //             title = { Text("Progress Setoran") },
-        //             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-        //         )
-        //     },
-        //     containerColor = Color.Transparent, // Penting agar background di bawahnya terlihat
-        //     contentColor = MaterialTheme.colorScheme.onSurface
-        // ) { paddingValues -> // Ubah ini jika pakai Scaffold
-        //     LazyColumn(... modifier = Modifier.padding(paddingValues) ...)
-        // }
-
-        // Untuk saat ini, saya akan tetap menggunakan Surface agar perubahan minimal
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            // Penting: Jadikan background Surface transparan agar gambar dan overlay di bawahnya terlihat
-            color = Color.Transparent // colors.background diganti Color.Transparent
+        SwipeRefresh(
+            state = swipeRefreshState,
+            onRefresh = { vm.refreshSetoranList() }
         ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp), // Padding ini berlaku untuk seluruh konten LazyColumn
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 contentPadding = PaddingValues(bottom = 32.dp)
@@ -251,9 +216,7 @@ fun RingkasanStatistik(total: Int, sudah: Int) {
             .fillMaxWidth()
             .shadow(4.dp, shape = RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        // --- UBAH WARNA CARD DI SINI ---
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFADD8E6)) // Biru muda
-        // Atau colors.primaryContainer jika ingin menggunakan warna tema
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
     ) {
         Column(
             modifier = Modifier
@@ -268,7 +231,7 @@ fun RingkasanStatistik(total: Int, sudah: Int) {
                 color = colors.primary
             )
 
-            StatisticRow("Total Setoran", total.toString(), colors.primary) // Warna teks value
+            StatisticRow("Total Setoran", total.toString(), colors.primary)
             StatisticRow("Sudah Setor", sudah.toString(), Color(0xFF4CAF50))
             StatisticRow("Belum Setor", belum.toString(), Color(0xFFF44336))
         }
@@ -285,7 +248,7 @@ fun StatisticRow(label: String, value: String, valueColor: Color) {
         Text(
             text = label,
             fontSize = 16.sp,
-            color = Color.DarkGray // Ubah warna teks label agar terlihat di Card biru
+            color = Color.White.copy(alpha = 0.85f)
         )
         Text(
             text = value,
@@ -315,9 +278,7 @@ fun RingkasanItemCard(item: RingkasanSetoran) {
             .padding(vertical = 6.dp)
             .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        // --- UBAH WARNA CARD DI SINI ---
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFADD8E6)) // Biru muda
-        // Atau colors.primaryContainer jika ingin menggunakan warna tema
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -336,7 +297,7 @@ fun RingkasanItemCard(item: RingkasanSetoran) {
                     Text(
                         text = label,
                         fontWeight = FontWeight.SemiBold,
-                        color = colors.onSurface, // Biarkan warna teks di sini sesuai tema
+                        color = colors.onSurface,
                         fontSize = 16.sp
                     )
                 }
@@ -405,8 +366,7 @@ fun ColorLegendBox(color: Color, label: String) {
         Text(
             text = label,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onBackground // Pastikan teks legenda terlihat
+            fontWeight = FontWeight.Medium
         )
     }
 }
